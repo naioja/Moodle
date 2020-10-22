@@ -172,9 +172,6 @@ function setup_moodle_mount_dependency_for_systemd_service
 [Unit]
 After=moodle.mount
 
-[Service]
-LimitNOFILE=100000
-EOF
     systemctl daemon-reload
   fi
 }
