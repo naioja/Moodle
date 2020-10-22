@@ -155,7 +155,7 @@
                         "osDisk": {
                             "caching": "ReadOnly",
                             "createOption": "FromImage",
-                            "diskSizeGB": 256,
+                            "diskSizeGB": 1024,
                             "managedDisk": {
                                 "storageAccountType": "[parameters('moodleCommon').osDiskStorageType]"
                             }
