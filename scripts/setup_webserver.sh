@@ -153,8 +153,6 @@ events {
 	worker_connections 2048;
 }
 
-worker_rlimit_nofile 100000;
-
 http {
 
   sendfile on;
@@ -170,11 +168,6 @@ http {
   proxy_buffering off;
   include /etc/nginx/mime.types;
   default_type application/octet-stream;
-
-  open_file_cache max=100000 inactive=20s;
-  open_file_cache_valid 30s;
-  open_file_cache_min_uses 2;
-  open_file_cache_errors on;
 
   access_log /var/log/nginx/access.log;
   error_log /var/log/nginx/error.log;
@@ -387,11 +380,6 @@ EOF
    sed -i "s/;opcache.enable.*/opcache.enable = 1/" $PhpIni
    sed -i "s/;opcache.memory_consumption.*/opcache.memory_consumption = 256/" $PhpIni
    sed -i "s/;opcache.max_accelerated_files.*/opcache.max_accelerated_files = 8000/" $PhpIni
-
-   # php-fpm config 
-   PhpVer=$(get_php_version)
-   PhpFpmConf=/etc/php/${PhpVer}/fpm/php-fpm.conf
-   sed -i "s/;rlimit_files.*/rlimit_files = 8192/" $PhpFpmConf
     
    # Remove the default site. Moodle is the only site we want
    rm -f /etc/nginx/sites-enabled/default
