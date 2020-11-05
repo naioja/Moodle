@@ -79,6 +79,7 @@
                 "[concat('Microsoft.Network/networkSecurityGroups/', parameters('moodleCommon').vmssNsgName)]"
             ],
             "location": "[parameters('moodleCommon').location]",
+            "zones": ["1"],
             "name": "[parameters('moodleCommon').vmssName]",
             "properties": {
                 "overprovision": true,
