@@ -132,6 +132,7 @@
         {
             "condition": "[not(equals(parameters('moodleCommon').httpsTermination, 'AppGw'))]",
             "type": "Microsoft.Network/publicIPAddresses",
+            "zone": ["1"],
             "sku": {
                 "name": "[parameters('moodleCommon').lbSku]"
             },
