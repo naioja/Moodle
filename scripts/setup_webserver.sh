@@ -187,7 +187,6 @@ worker_rlimit_nofile 100000;
 
 http {
 
-  types_hash_max_size 2048;
   sendfile on;
   tcp_nopush on;
   tcp_nodelay on;
