@@ -253,7 +253,7 @@ EOF
   htmlRootDir="/moodle/html/moodle"
   if [ "$htmlLocalCopySwitch" = "true" ]; then
     mkdir -p /var/www/html
-    rsync -av --delete /moodle/html/moodle /var/www/html
+    nohup rsync -av --delete /moodle/html/moodle /var/www/html &
     htmlRootDir="/var/www/html/moodle"
     setup_html_local_copy_cron_job
   fi
