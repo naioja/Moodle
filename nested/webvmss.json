@@ -79,6 +79,7 @@
                 "[concat('Microsoft.Network/networkSecurityGroups/', parameters('moodleCommon').vmssNsgName)]"
             ],
             "location": "[parameters('moodleCommon').location]",
+            "zones": ["1"],
             "name": "[parameters('moodleCommon').vmssName]",
             "properties": {
                 "overprovision": true,
@@ -155,6 +156,7 @@
                         "osDisk": {
                             "caching": "ReadOnly",
                             "createOption": "FromImage",
+                            "diskSizeGB": 1024,
                             "managedDisk": {
                                 "storageAccountType": "[parameters('moodleCommon').osDiskStorageType]"
                             }
