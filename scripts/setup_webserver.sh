@@ -299,12 +299,12 @@ server {
           proxy_read_timeout          3600;
           send_timeout                3600;
         }
-
-        upstream backend {
-          server unix:/run/php/php${PhpVer}-fpm.sock fail_timeout=1s;
-          server unix:/run/php/php${PhpVer}-fpm-backup.sock backup;
-        }    
 }
+
+upstream backend {
+        server unix:/run/php/php${PhpVer}-fpm.sock fail_timeout=1s;
+        server unix:/run/php/php${PhpVer}-fpm-backup.sock backup;
+}    
 EOF
   fi
 
