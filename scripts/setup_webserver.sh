@@ -63,6 +63,34 @@ check_fileServerType_param $fileServerType
   sudo apt-get -y install rsyslog
   sudo apt-get -y install postgresql-client mysql-client git
 
+  # kernel settings
+  cat <<EOF >> /etc/sysctl.d/99-network-performance.conf
+net.core.somaxconn = 65536
+net.core.netdev_max_backlog = 5000
+net.core.rmem_max = 16777216
+net.core.wmem_max = 16777216
+net.ipv4.tcp_wmem = 4096 12582912 16777216
+net.ipv4.tcp_rmem = 4096 12582912 16777216
+net.ipv4.route.flush = 1
+net.ipv4.tcp_max_syn_backlog = 8096
+net.ipv4.tcp_tw_reuse = 1
+net.ipv4.ip_local_port_range = 10240 65535
+EOF
+  # apply the new kernel settings
+  sysctl -p /etc/sysctl.d/99-network-performance.conf
+
+  # scheduling IRQ interrupts on the last two cores of the cpu
+  # masking 0011 or 00000011 the result will always be 3 echo "obase=16;ibase=2;0011" | bc | tr '[:upper:]' '[:lower:]'
+  if [ -f /etc/default/irqbalance ]; then
+    sed -i "s/\#IRQBALANCE_BANNED_CPUS\=/IRQBALANCE_BANNED_CPUS\=3/g" /etc/default/irqbalance
+    systemctl restart irqbalance.service 
+  fi
+  
+  # configuring tuned for throughput-performance
+  sudo apt-get -y install tuned
+  systemctl enable tuned
+  tuned-adm profile throughput-performance
+
   if [ $fileServerType = "gluster" ]; then
     #configure gluster repository & install gluster client
     sudo add-apt-repository ppa:gluster/glusterfs-3.10 -y
@@ -150,11 +178,16 @@ worker_processes auto;
 pid /run/nginx.pid;
 
 events {
-	worker_connections 2048;
+	worker_connections 8192;
+  multi_accept on;
+  use epoll;
 }
+
+worker_rlimit_nofile 100000;
 
 http {
 
+  types_hash_max_size 2048;
   sendfile on;
   tcp_nopush on;
   tcp_nodelay on;
@@ -172,13 +205,18 @@ http {
   access_log /var/log/nginx/access.log;
   error_log /var/log/nginx/error.log;
 
+  open_file_cache max=20000 inactive=20s;
+  open_file_cache_valid 30s;
+  open_file_cache_min_uses 2;
+  open_file_cache_errors on;
+
   set_real_ip_from   127.0.0.1;
   real_ip_header      X-Forwarded-For;
   #upgrading to TLSv1.2 and droping 1 & 1.1
-  ssl_protocols TLSv1.2;
-  #ssl_prefer_server_ciphers on;
+  ssl_protocols TLSv1.2 TLSv1.3;
+  ssl_prefer_server_ciphers off;
   #adding ssl ciphers
-  ssl_ciphers ECDHE-RSA-AES256-GCM-SHA512:DHE-RSA-AES256-GCM-SHA512:ECDHE-RSA-AES256-GCM-SHA384:DHE-RSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-SHA384;
+  ssl_ciphers ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384;
 
   gzip on;
   gzip_disable "msie6";
@@ -224,13 +262,16 @@ EOF
     # Configure nginx/https
     cat <<EOF >> /etc/nginx/sites-enabled/${siteFQDN}.conf
 server {
-        listen 443 ssl;
+        listen 443 ssl http2;
         root ${htmlRootDir};
 	index index.php index.html index.htm;
 
         ssl on;
         ssl_certificate /moodle/certs/nginx.crt;
         ssl_certificate_key /moodle/certs/nginx.key;
+        ssl_session_timeout 1d;
+        ssl_session_cache shared:MozSSL:10m;  # about 40000 sessions
+        ssl_session_tickets off;
 
         # Log to syslog
         error_log syslog:server=localhost,facility=local1,severity=error,tag=moodle;
@@ -253,11 +294,17 @@ server {
           proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
           proxy_pass http://localhost:80;
 
+          proxy_next_upstream error timeout http_502 http_504;
           proxy_connect_timeout       3600;
           proxy_send_timeout          3600;
           proxy_read_timeout          3600;
           send_timeout                3600;
         }
+
+        upstream backend {
+          server unix:/run/php/php${PhpVer}-fpm.sock fail_timeout=1s;
+          server unix:/run/php/php${PhpVer}-fpm-backup.sock backup;
+        }    
 }
 EOF
   fi
@@ -309,8 +356,8 @@ EOF
  
           fastcgi_buffers 16 16k;
           fastcgi_buffer_size 32k;
-          fastcgi_param   SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
-          fastcgi_pass unix:/run/php/php${PhpVer}-fpm.sock;
+          fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
+          fastcgi_pass backend;
           fastcgi_read_timeout 3600;
           fastcgi_index index.php;
           include fastcgi_params;
@@ -378,8 +425,8 @@ EOF
    sed -i "s/;opcache.save_comments.*/opcache.save_comments = 1/" $PhpIni
    sed -i "s/;opcache.enable_file_override.*/opcache.enable_file_override = 0/" $PhpIni
    sed -i "s/;opcache.enable.*/opcache.enable = 1/" $PhpIni
-   sed -i "s/;opcache.memory_consumption.*/opcache.memory_consumption = 256/" $PhpIni
-   sed -i "s/;opcache.max_accelerated_files.*/opcache.max_accelerated_files = 8000/" $PhpIni
+   sed -i "s/;opcache.memory_consumption.*/opcache.memory_consumption = 512/" $PhpIni
+   sed -i "s/;opcache.max_accelerated_files.*/opcache.max_accelerated_files = 20000/" $PhpIni
     
    # Remove the default site. Moodle is the only site we want
    rm -f /etc/nginx/sites-enabled/default
@@ -403,11 +450,23 @@ group = www-data
 listen = /run/php/php${PhpVer}-fpm.sock
 listen.owner = www-data
 listen.group = www-data
-pm = dynamic
-pm.max_children = 3000 
-pm.start_servers = 20 
-pm.min_spare_servers = 20 
-pm.max_spare_servers = 30 
+pm = static
+pm.max_children = 32
+pm.start_servers = 32
+pm.max_requests = 30000
+EOF
+
+cat <<EOF > /etc/php/${PhpVer}/fpm/pool.d/backup.conf
+[backup]
+user = www-data
+group = www-data
+listen = /run/php/php${PhpVer}-fpm-backup.sock
+listen.owner = www-data
+listen.group = www-data
+pm = static
+pm.max_children = 16
+pm.start_servers = 16
+pm.max_requests = 3000000
 EOF
 
      # Restart fpm
@@ -422,7 +481,7 @@ EOF
    fi
 
    # Configure varnish startup for 16.04
-   VARNISHSTART="ExecStart=\/usr\/sbin\/varnishd -j unix,user=vcache -F -a :80 -T localhost:6082 -f \/etc\/varnish\/moodle.vcl -S \/etc\/varnish\/secret -s malloc,1024m -p thread_pool_min=200 -p thread_pool_max=4000 -p thread_pool_add_delay=2 -p timeout_linger=100 -p timeout_idle=30 -p send_timeout=1800 -p thread_pools=4 -p http_max_hdr=512 -p workspace_backend=512k"
+   VARNISHSTART="ExecStart=\/usr\/sbin\/varnishd -j unix,user=vcache -F -a :80 -T localhost:6082 -f \/etc\/varnish\/moodle.vcl -S \/etc\/varnish\/secret -s malloc,1024m -p thread_pool_min=1000 -p thread_pool_max=4000 -p thread_pool_add_delay=2 -p timeout_linger=100 -p timeout_idle=30 -p send_timeout=1800 -p thread_pools=2 -p http_max_hdr=512 -p workspace_backend=512k"
    sed -i "s/^ExecStart.*/${VARNISHSTART}/" /lib/systemd/system/varnish.service
 
    # Configure varnish VCL for moodle
