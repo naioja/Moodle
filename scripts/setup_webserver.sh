@@ -63,6 +63,10 @@ check_fileServerType_param $fileServerType
   sudo apt-get -y install rsyslog
   sudo apt-get -y install postgresql-client mysql-client git
 
+  # install azure-cli 
+  curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash /tmp/InstallAzureCLIDeb
+  wget -O azcopy_v10.tar.gz https://aka.ms/downloadazcopy-v10-linux && tar -xf azcopy_v10.tar.gz --strip-components=1 && sudo cp ./azcopy_linux_amd64_*/azcopy /usr/bin/
+
   # kernel settings
   cat <<EOF >> /etc/sysctl.d/99-network-performance.conf
 net.core.somaxconn = 65536
@@ -132,10 +136,6 @@ EOF
     install_php_mssql_driver
     
   fi
-
-  # install azure-cli 
-  sudo screen -dmLS installing-async-azure-cli bash -c "curl -sL https://aka.ms/InstallAzureCLIDeb | bash /tmp/InstallAzureCLIDeb"
-  wget -O azcopy_v10.tar.gz https://aka.ms/downloadazcopy-v10-linux && tar -xf azcopy_v10.tar.gz --strip-components=1 && sudo cp ./azcopy_linux_amd64_*/azcopy /usr/bin/
    
   # PHP Version
   PhpVer=$(get_php_version)
