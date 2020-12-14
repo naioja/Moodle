@@ -22,6 +22,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 set -ex
+echo "### Script Start `date`###"
 
 moodle_on_azure_configs_json_path=${1}
 
@@ -44,31 +45,73 @@ echo $nfsByoIpExportPath >> /tmp/vars.txt
 echo $htmlLocalCopySwitch >> /tmp/vars.txt
 echo $phpVersion          >> /tmp/vars.txt
 
-# downloading and updating php packages from the repository 
-# sudo dpkg --configure –a
- sudo add-apt-repository ppa:ondrej/php -y > /dev/null 2>&1
- sudo apt-get update > /dev/null 2>&1
+
 
 check_fileServerType_param $fileServerType
 
 {
-  # make sure the system does automatic update
-  sudo apt-get -y update
-  sudo apt-get -y install unattended-upgrades
+  set -ex
+  echo "### Function Start `date`###"
 
-  # install pre-requisites
-  # sudo apt-get -y install python-software-properties unzip rsyslog
-  sudo apt-get -y install software-properties-common
-  sudo apt-get -y install unzip
-  sudo apt-get -y install rsyslog
-  sudo apt-get -y install postgresql-client mysql-client git
+  # add azure-cli repository
+  curl -sL https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor | tee /etc/apt/trusted.gpg.d/microsoft.gpg > /dev/null
+  AZ_REPO=$(lsb_release -cs)
+  echo "deb [arch=amd64] https://packages.microsoft.com/repos/azure-cli/ $AZ_REPO main" |  tee /etc/apt/sources.list.d/azure-cli.list
+  
+  # add PHP-FPM repository 
+  add-apt-repository ppa:ondrej/php -y > /dev/null 2>&1
 
-  # install azure-cli 
-  curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
-  wget -O azcopy_v10.tar.gz https://aka.ms/downloadazcopy-v10-linux && tar -xf azcopy_v10.tar.gz --strip-components=1 && sudo cp ./azcopy /usr/bin/
+  apt-get -qq -o=Dpkg::Use-Pty=0 update 
+
+  # install pre-requisites including VARNISH and PHP-FPM
+  export DEBIAN_FRONTEND=noninteractive
+  apt-get --yes --force-yes \
+    --no-install-recommends \
+    -qq -o=Dpkg::Use-Pty=0 \
+    -o Dpkg::Options::="--force-confdef" \
+    -o Dpkg::Options::="--force-confold" \
+    install \
+    azure-cli \
+    ca-certificates \
+    curl \
+    apt-transport-https \
+    lsb-release gnupg \
+    software-properties-common \
+    unzip \
+    rsyslog \
+    postgresql-client \
+    mysql-client \
+    git \
+    unattended-upgrades \
+    tuned \
+    varnish \
+    php$phpVersion \
+    php$phpVersion-cli \
+    php$phpVersion-curl \
+    php$phpVersion-zip \
+    php-pear \
+    php$phpVersion-mbstring \
+    mcrypt \
+    php$phpVersion-dev \
+    graphviz \
+    aspell \
+    php$phpVersion-soap \
+    php$phpVersion-json \
+    php$phpVersion-redis \
+    php$phpVersion-bcmath \
+    php$phpVersion-gd \
+    php$phpVersion-pgsql \
+    php$phpVersion-mysql \
+    php$phpVersion-xmlrpc \
+    php$phpVersion-intl \
+    php$phpVersion-xml \
+    php$phpVersion-bz2
+
+  # install azcopy
+  wget -O azcopy_v10.tar.gz https://aka.ms/downloadazcopy-v10-linux && tar -xf azcopy_v10.tar.gz --strip-components=1 && mv ./azcopy /usr/bin/
 
   # kernel settings
-  cat <<EOF >> /etc/sysctl.d/99-network-performance.conf
+  cat <<EOF > /etc/sysctl.d/99-network-performance.conf
 net.core.somaxconn = 65536
 net.core.netdev_max_backlog = 5000
 net.core.rmem_max = 16777216
@@ -91,7 +134,6 @@ EOF
   fi
   
   # configuring tuned for throughput-performance
-  sudo apt-get -y install tuned
   systemctl enable tuned
   tuned-adm profile throughput-performance
 
@@ -101,40 +143,24 @@ EOF
     sudo apt-get -y update
     sudo apt-get -y install glusterfs-client
   elif [ "$fileServerType" = "azurefiles" ]; then
-    sudo apt-get -y install cifs-utils
+    apt-get -y -qq -o=Dpkg::Use-Pty=0 install cifs-utils
   fi
-  
-  # install the base stack
-  # passing php versions $phpVersion
-  sudo apt-get -y install varnish php$phpVersion php$phpVersion-cli php$phpVersion-curl php$phpVersion-zip php-pear php$phpVersion-mbstring php$phpVersion-dev mcrypt
-
-  # if webservertype is nginx then apache2 will be masked.
-  # service=apache2
-  # if [ "$webServerType" = "nginx" ]; then
-  #     if [ $(ps -ef | grep -v grep | grep $service | wc -l) > 0 ]; then
-  #         echo “Stop the $service!!!”
-  #         sudo systemctl stop $service
-  #         sudo systemctl mask $service
-  #     fi
-  # fi
 
   if [ "$webServerType" = "nginx" -o "$httpsTermination" = "VMSS" ]; then
-    sudo apt-get -y install nginx
+    apt-get --yes --force-yes -qq -o=Dpkg::Use-Pty=0 install nginx
   fi
    
   if [ "$webServerType" = "apache" ]; then
     # install apache pacakges
-    sudo apt-get -y install apache2 libapache2-mod-php
+    apt-get --yes --force-yes -qq -o=Dpkg::Use-Pty=0 install apache2 libapache2-mod-php
   else
     # for nginx-only option
-    sudo apt-get -y install php$phpVersion-fpm
+    apt-get --yes --force-yes -qq -o=Dpkg::Use-Pty=0 install php$phpVersion-fpm
   fi
    
   # Moodle requirements
-  sudo apt-get install -y graphviz aspell php$phpVersion-soap php$phpVersion-json php$phpVersion-redis php$phpVersion-bcmath php$phpVersion-gd php$phpVersion-pgsql php$phpVersion-mysql php$phpVersion-xmlrpc php$phpVersion-intl php$phpVersion-xml php$phpVersion-bz2
   if [ "$dbServerType" = "mssql" ]; then
-    install_php_mssql_driver
-    
+    install_php_mssql_driver 
   fi
    
   # PHP Version
@@ -256,10 +282,9 @@ EOF
   htmlRootDir="/moodle/html/moodle"
   if [ "$htmlLocalCopySwitch" = "true" ]; then
     mkdir -p /var/www/html
-    #nohup rsync -av --delete /moodle/html/moodle /var/www/html &
-    END=`date -u -d "60 minutes" '+%Y-%m-%dT%H:%M:00Z'`
     ACCOUNT_KEY="$storageAccountKey"
     NAME="$storageAccountName"
+    END=`date -u -d "60 minutes" '+%Y-%m-%dT%H:%M:00Z'`
     htmlRootDir="/var/www/html/moodle"
 
     sas=$(az storage share generate-sas \
@@ -270,7 +295,12 @@ EOF
       --permissions lr \
       --expiry $END -o tsv)
 
-    azcopy copy "https://$NAME.file.core.windows.net/moodle/html/moodle/?$sas" $htmlRootDir --recursive
+    export AZCOPY_CONCURRENCY_VALUE='48'
+    export AZCOPY_BUFFER_GB='4'
+
+    azcopy --log-level ERROR copy "https://$NAME.file.core.windows.net/moodle/html/moodle/*?$sas" $htmlRootDir --recursive
+    chown www-data:www-data -R $htmlRootDir
+    sync
     setup_html_local_copy_cron_job
   fi
 
@@ -469,7 +499,7 @@ listen.group = www-data
 pm = static
 pm.max_children = 32
 pm.start_servers = 32
-pm.max_requests = 30000
+pm.max_requests = 300000
 EOF
 
 cat <<EOF > /etc/php/${PhpVer}/fpm/pool.d/backup.conf
@@ -482,7 +512,7 @@ listen.group = www-data
 pm = static
 pm.max_children = 16
 pm.start_servers = 16
-pm.max_requests = 3000000
+pm.max_requests = 300000
 EOF
 
      # Restart fpm
@@ -747,14 +777,16 @@ EOF
 # This code is stop apache2 which is installing in 18.04
   service=apache2
   if [ "$webServerType" = "nginx" ]; then
-      if [ $(ps -ef | grep -v grep | grep $service | wc -l) > 0 ]; then
+      if pgrep -x "$service" >/dev/null 
+      then
             echo “Stop the $service!!!”
-            sudo systemctl stop $service
-            sudo systemctl mask $service
+            systemctl stop $service
+      else
+            systemctl mask $service
       fi
   fi
   # Restart Varnish
   systemctl daemon-reload
-  service varnish restart
-
-}  > /tmp/setup.log
+  systemctl reload varnish.service
+  echo "### Script End `date`###"
+} 2>&1 | tee /tmp/setup.log
