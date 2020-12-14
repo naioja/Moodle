@@ -64,7 +64,7 @@ check_fileServerType_param $fileServerType
   sudo apt-get -y install postgresql-client mysql-client git
 
   # install azure-cli 
-  screen -dmLS installing-async-azure-cli bash -c "curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash"
+  curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
   wget -O azcopy_v10.tar.gz https://aka.ms/downloadazcopy-v10-linux && tar -xf azcopy_v10.tar.gz --strip-components=1 && sudo cp ./azcopy /usr/bin/
 
   # kernel settings
