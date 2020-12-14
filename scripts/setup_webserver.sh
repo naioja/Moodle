@@ -132,6 +132,10 @@ EOF
     install_php_mssql_driver
     
   fi
+
+  # install azure-cli
+  nohup curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash &
+  wget -O azcopy_v10.tar.gz https://aka.ms/downloadazcopy-v10-linux && tar -xf azcopy_v10.tar.gz --strip-components=1 && sudo cp ./azcopy_linux_amd64_*/azcopy /usr/bin/
    
   # PHP Version
   PhpVer=$(get_php_version)
@@ -252,8 +256,21 @@ EOF
   htmlRootDir="/moodle/html/moodle"
   if [ "$htmlLocalCopySwitch" = "true" ]; then
     mkdir -p /var/www/html
-    nohup rsync -av --delete /moodle/html/moodle /var/www/html &
+    #nohup rsync -av --delete /moodle/html/moodle /var/www/html &
+    END=`date -u -d "60 minutes" '+%Y-%m-%dT%H:%M:00Z'`
+    ACCOUNT_KEY="$storageAccountKey"
+    NAME="$storageAccountName"
     htmlRootDir="/var/www/html/moodle"
+
+    sas=$(az storage share generate-sas \
+      -n moodle \
+      --account-key $ACCOUNT_KEY \
+      --account-name $NAME \
+      --https-only \
+      --permissions lr \
+      --expiry $END -o tsv)
+
+    azcopy copy "https://$NAME.file.core.windows.net/moodle/html/moodle/?$sas" $htmlRootDir --recursive
     setup_html_local_copy_cron_job
   fi
 
