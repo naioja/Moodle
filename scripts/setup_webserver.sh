@@ -65,7 +65,7 @@ check_fileServerType_param $fileServerType
 
   # install pre-requisites including VARNISH and PHP-FPM
   export DEBIAN_FRONTEND=noninteractive
-  apt-get --yes --force-yes \
+  apt-get --yes \
     --no-install-recommends \
     -qq -o=Dpkg::Use-Pty=0 \
     -o Dpkg::Options::="--force-confdef" \
@@ -108,7 +108,7 @@ check_fileServerType_param $fileServerType
     php$phpVersion-bz2
 
   # install azcopy
-  wget -O azcopy_v10.tar.gz https://aka.ms/downloadazcopy-v10-linux && tar -xf azcopy_v10.tar.gz --strip-components=1 && mv ./azcopy /usr/bin/
+  wget -q -O azcopy_v10.tar.gz https://aka.ms/downloadazcopy-v10-linux && tar -xf azcopy_v10.tar.gz --strip-components=1 && mv ./azcopy /usr/bin/
 
   # kernel settings
   cat <<EOF > /etc/sysctl.d/99-network-performance.conf
@@ -147,15 +147,15 @@ EOF
   fi
 
   if [ "$webServerType" = "nginx" -o "$httpsTermination" = "VMSS" ]; then
-    apt-get --yes --force-yes -qq -o=Dpkg::Use-Pty=0 install nginx
+    apt-get --yes -qq -o=Dpkg::Use-Pty=0 install nginx
   fi
    
   if [ "$webServerType" = "apache" ]; then
     # install apache pacakges
-    apt-get --yes --force-yes -qq -o=Dpkg::Use-Pty=0 install apache2 libapache2-mod-php
+    apt-get --yes -qq -o=Dpkg::Use-Pty=0 install apache2 libapache2-mod-php
   else
     # for nginx-only option
-    apt-get --yes --force-yes -qq -o=Dpkg::Use-Pty=0 install php$phpVersion-fpm
+    apt-get --yes -qq -o=Dpkg::Use-Pty=0 install php$phpVersion-fpm
   fi
    
   # Moodle requirements
@@ -299,8 +299,7 @@ EOF
     export AZCOPY_BUFFER_GB='4'
 
     azcopy --log-level ERROR copy "https://$NAME.file.core.windows.net/moodle/html/moodle/*?$sas" $htmlRootDir --recursive
-    chown www-data:www-data -R $htmlRootDir
-    sync
+    chown www-data:www-data -R $htmlRootDir && sync
     setup_html_local_copy_cron_job
   fi
 
@@ -310,7 +309,7 @@ EOF
 server {
         listen 443 ssl http2;
         root ${htmlRootDir};
-	index index.php index.html index.htm;
+	      index index.php index.html index.htm;
 
         ssl on;
         ssl_certificate /moodle/certs/nginx.crt;
@@ -411,7 +410,7 @@ EOF
 }
 
 EOF
-  fi # if [ "$webServerType" = "nginx" ];
+  fi
 
   if [ "$webServerType" = "apache" ]; then
     # Configure Apache/php
@@ -487,47 +486,8 @@ EOF
      sudo service nginx restart 
    fi
 
-   if [ "$webServerType" = "nginx" ]; then
-     # fpm config - overload this 
-     cat <<EOF > /etc/php/${PhpVer}/fpm/pool.d/www.conf
-[www]
-user = www-data
-group = www-data
-listen = /run/php/php${PhpVer}-fpm.sock
-listen.owner = www-data
-listen.group = www-data
-pm = static
-pm.max_children = 32
-pm.start_servers = 32
-pm.max_requests = 300000
-EOF
-
-cat <<EOF > /etc/php/${PhpVer}/fpm/pool.d/backup.conf
-[backup]
-user = www-data
-group = www-data
-listen = /run/php/php${PhpVer}-fpm-backup.sock
-listen.owner = www-data
-listen.group = www-data
-pm = static
-pm.max_children = 16
-pm.start_servers = 16
-pm.max_requests = 300000
-EOF
-
-     # Restart fpm
-     service php${PhpVer}-fpm restart
-   fi
-
-   if [ "$webServerType" = "apache" ]; then
-      if [ "$htmlLocalCopySwitch" != "true" ]; then
-        setup_moodle_mount_dependency_for_systemd_service apache2 || exit 1
-      fi
-      sudo service apache2 restart
-   fi
-
    # Configure varnish startup for 16.04
-   VARNISHSTART="ExecStart=\/usr\/sbin\/varnishd -j unix,user=vcache -F -a :80 -T localhost:6082 -f \/etc\/varnish\/moodle.vcl -S \/etc\/varnish\/secret -s malloc,1024m -p thread_pool_min=1000 -p thread_pool_max=4000 -p thread_pool_add_delay=2 -p timeout_linger=100 -p timeout_idle=30 -p send_timeout=1800 -p thread_pools=2 -p http_max_hdr=512 -p workspace_backend=512k"
+   VARNISHSTART="ExecStart=\/usr\/sbin\/varnishd -j unix,user=vcache -F -a :80 -T localhost:6082 -f \/etc\/varnish\/moodle.vcl -S \/etc\/varnish\/secret -s malloc,4096m -p thread_pool_min=1000 -p thread_pool_max=4000 -p thread_pool_add_delay=0.1 -p timeout_linger=10 -p timeout_idle=30 -p send_timeout=1800 -p thread_pools=2 -p http_max_hdr=512 -p workspace_backend=512k"
    sed -i "s/^ExecStart.*/${VARNISHSTART}/" /lib/systemd/system/varnish.service
 
    # Configure varnish VCL for moodle
@@ -787,6 +747,46 @@ EOF
   fi
   # Restart Varnish
   systemctl daemon-reload
-  systemctl reload varnish.service
+  systemctl restart varnish
+
+   if [ "$webServerType" = "nginx" ]; then
+     # fpm config - overload this 
+     cat <<EOF > /etc/php/${PhpVer}/fpm/pool.d/www.conf
+[www]
+user = www-data
+group = www-data
+listen = /run/php/php${PhpVer}-fpm.sock
+listen.owner = www-data
+listen.group = www-data
+pm = static
+pm.max_children = 32
+pm.start_servers = 32
+pm.max_requests = 300000
+EOF
+
+cat <<EOF > /etc/php/${PhpVer}/fpm/pool.d/backup.conf
+[backup]
+user = www-data
+group = www-data
+listen = /run/php/php${PhpVer}-fpm-backup.sock
+listen.owner = www-data
+listen.group = www-data
+pm = static
+pm.max_children = 16
+pm.start_servers = 16
+pm.max_requests = 300000
+EOF
+
+     # Restart fpm
+     service php${PhpVer}-fpm restart
+   fi
+
+   if [ "$webServerType" = "apache" ]; then
+      if [ "$htmlLocalCopySwitch" != "true" ]; then
+        setup_moodle_mount_dependency_for_systemd_service apache2 || exit 1
+      fi
+        service apache2 restart
+   fi
+
   echo "### Script End `date`###"
 } 2>&1 | tee /tmp/setup.log
