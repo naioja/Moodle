@@ -390,6 +390,13 @@
             },
             "type": "int"
         },
+        "OSdataDiskSizeInGB": {
+            "defaultValue": 256,
+            "metadata": {
+                "description": "OS disk size per Webserver in VMSS"
+            },
+            "type": "int"
+        },
         "fileServerDiskCount": {
             "defaultValue": 4,
             "minValue": 2,
@@ -636,6 +643,18 @@
             ],
             "metadata": {
                 "description": "Loadbalancer SKU"
+            },
+            "type": "string"
+        },
+        "loadBalancerZone": {
+            "defaultValue": "1",
+            "allowedValues": [
+                "1",
+                "2",
+                "3"
+            ],
+            "metadata": {
+                "description": "Loadbalancer Zone"
             },
             "type": "string"
         },
@@ -898,6 +917,9 @@
                     "dataDiskSizeInGB": {
                         "value": "[parameters('fileServerDiskSize')]"
                     },
+                    "OSdataDiskSizeInGB": {
+                        "value": "[parameters('OSdiskSizeGB')]"
+                    },
                     "resourcesUniqueString": {
                         "value": "[variables('resourceprefix')]"
                     }
@@ -1055,6 +1077,10 @@
         "loadBalancerSku": {
             "type": "string",
             "value": "[variables('moodleCommon').lbSku]"
+        },
+        "loadBalancerZone": {
+            "type": "string",
+            "value": "[variables('moodleCommon').lbZone]"
         }
     },
     "variables": {
@@ -1130,6 +1156,7 @@
             "extProbeHTTPS": "[concat('lb-probe-https-',variables('resourceprefix'))]",
             "fileServerDiskCount": "[parameters('fileServerDiskCount')]",
             "fileServerDiskSize": "[parameters('fileServerDiskSize')]",
+            "OSdiskSizeGB": "[parameters('OSdataDiskSizeInGB')]",
             "fileServerType": "[parameters('fileServerType')]",
             "fileServerVmCount": 2,
             "fileServerVmSku": "[parameters('fileServerVmSku')]",
@@ -1146,6 +1173,7 @@
             "installObjectFsSwitch": "[parameters('installObjectFsSwitch')]",
             "lbDns": "[concat('lb-',variables('resourceprefix'),'.',parameters('location'),'.cloudapp.azure.com')]",
             "lbSku": "[parameters('loadBalancerSku')]",
+            "lbZone": "[parameters('loadBalancerZone')]",
             "lbName": "[concat('lb-',variables('resourceprefix'))]",
             "lbPipName": "[concat('lb-pubip-',variables('resourceprefix'))]",
             "location": "[parameters('location')]",

@@ -132,7 +132,9 @@
         {
             "condition": "[not(equals(parameters('moodleCommon').httpsTermination, 'AppGw'))]",
             "type": "Microsoft.Network/publicIPAddresses",
-            "zones": ["1"],
+            "zones": [
+                "[parameters('moodleCommon').lbZone]"
+            ],
             "sku": {
                 "name": "[parameters('moodleCommon').lbSku]"
             },
@@ -155,7 +157,9 @@
             "apiVersion": "2019-11-01",
             "location": "[parameters('moodleCommon').location]",
             "name": "[parameters('moodleCommon').appGwPipName]",
-            "zones": ["1"],
+            "zones": [
+                "[parameters('moodleCommon').lbZone]"
+            ],
             "sku" : {
                 "name" : "[if(endswith(parameters('moodleCommon').appGwSkuName,'v2'),'Standard','Basic')]"
             },
