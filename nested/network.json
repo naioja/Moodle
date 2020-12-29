@@ -159,7 +159,7 @@
             "location": "[parameters('moodleCommon').location]",
             "name": "[parameters('moodleCommon').appGwPipName]",
             "zones": [
-                "[parameters('moodleCommon').lbZone]"
+                "[if(equals(parameters('moodleCommon').AzSwitch, 'yes'), parameters('moodleCommon').lbZone, json('null'))]"
             ],
             "sku" : {
                 "name" : "[if(endswith(parameters('moodleCommon').appGwSkuName,'v2'),'Standard','Basic')]"
