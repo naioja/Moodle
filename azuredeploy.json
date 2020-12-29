@@ -72,6 +72,13 @@
             },
             "type": "bool"
         },
+        "AzSwitch": {
+            "defaultValue": true,
+            "metadata": {
+                "description": "Switch to create Azure Load Balancer, Public IP and VMSS using Availability Zones"
+            },
+            "type": "bool"
+        },
         "ddosSwitch": {
             "defaultValue": false,
             "metadata": {
@@ -390,7 +397,7 @@
             },
             "type": "int"
         },
-        "OSdataDiskSizeInGB": {
+        "OSDiskSizeInGB": {
             "defaultValue": 256,
             "metadata": {
                 "description": "OS disk size per Webserver in VMSS"
@@ -646,8 +653,18 @@
             },
             "type": "string"
         },
+        "loadBalancerTier": {
+            "defaultValue": "Regional",
+            "allowedValues": [
+                "Regional",
+                "Global"
+            ],
+            "metadata": {
+                "description": "Loadbalancer Tier"
+            },
+            "type": "string"
+        },
         "loadBalancerZone": {
-            "defaultValue": "1",
             "allowedValues": [
                 "1",
                 "2",
@@ -917,8 +934,8 @@
                     "dataDiskSizeInGB": {
                         "value": "[parameters('fileServerDiskSize')]"
                     },
-                    "OSdataDiskSizeInGB": {
-                        "value": "[parameters('OSdiskSizeGB')]"
+                    "OSDiskSizeInGB": {
+                        "value": "[parameters('OSDiskSizeInGB')]"
                     },
                     "resourcesUniqueString": {
                         "value": "[variables('resourceprefix')]"
@@ -1078,6 +1095,10 @@
             "type": "string",
             "value": "[variables('moodleCommon').lbSku]"
         },
+        "loadBalancerTier": {
+            "type": "string",
+            "value": "[variables('moodleCommon').lbTier]"
+        },
         "loadBalancerZone": {
             "type": "string",
             "value": "[variables('moodleCommon').lbZone]"
@@ -1156,7 +1177,7 @@
             "extProbeHTTPS": "[concat('lb-probe-https-',variables('resourceprefix'))]",
             "fileServerDiskCount": "[parameters('fileServerDiskCount')]",
             "fileServerDiskSize": "[parameters('fileServerDiskSize')]",
-            "OSdiskSizeGB": "[parameters('OSdataDiskSizeInGB')]",
+            "OSDiskSizeInGB": "[parameters('OSDiskSizeInGB')]",
             "fileServerType": "[parameters('fileServerType')]",
             "fileServerVmCount": 2,
             "fileServerVmSku": "[parameters('fileServerVmSku')]",
@@ -1167,6 +1188,7 @@
             "gfxAvailabilitySetName": "[concat('gluster-avset-',variables('resourceprefix'))]",
             "glusterScriptFilename": "install_gluster.sh",
             "htmlLocalCopySwitch": "[parameters('htmlLocalCopySwitch')]",
+            "AzSwitch": "[parameters('AzSwitch')]",
             "httpsTermination": "[parameters('httpsTermination')]",
             "installGdprPluginsSwitch": "[parameters('installGdprPluginsSwitch')]",
             "installO365pluginsSwitch": "[parameters('installO365pluginsSwitch')]",
@@ -1174,6 +1196,7 @@
             "lbDns": "[concat('lb-',variables('resourceprefix'),'.',parameters('location'),'.cloudapp.azure.com')]",
             "lbSku": "[parameters('loadBalancerSku')]",
             "lbZone": "[parameters('loadBalancerZone')]",
+            "lbTier": "[parameters('loadBalancerTier')]",
             "lbName": "[concat('lb-',variables('resourceprefix'))]",
             "lbPipName": "[concat('lb-pubip-',variables('resourceprefix'))]",
             "location": "[parameters('location')]",
