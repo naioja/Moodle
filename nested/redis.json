@@ -31,6 +31,18 @@
                 "subnetId": "[parameters('subnetIdRedis')]"
             }
         }
+        // {
+        //     "type": "Microsoft.Cache/Redis/firewallRules",
+        //     "apiVersion": "2019-07-01",
+        //     "name": "[concat(parameters('Redis_redis_igj5zr_name'), '/bla001')]",
+        //     "dependsOn": [
+        //         "[resourceId('Microsoft.Cache/Redis', parameters('Redis_redis_igj5zr_name'))]"
+        //     ],
+        //     "properties": {
+        //         "startIP": "192.168.0.10",
+        //         "endIP": "192.168.0.10"
+        //     }
+        // }
     ],
     "variables": {
         "documentation1": "This sub-template creates a redis cache.  It expects certain values in the 'common' datastructure.",
