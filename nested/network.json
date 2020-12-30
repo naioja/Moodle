@@ -153,6 +153,52 @@
             }
         },
         {
+            "condition": "[not(equals(parameters('moodleCommon').httpsTermination, 'AppGw'))]",
+            "type": "Microsoft.Network/publicIPAddresses",
+            "zones": [
+                "[parameters('moodleCommon').lbZone]"
+            ],
+            "sku": {
+                "name": "[parameters('moodleCommon').lbSku]",
+                "tier": "[parameters('moodleCommon').lbTier]"
+            },
+            "apiVersion": "2019-11-01",
+            "location": "[parameters('moodleCommon').location]",
+            "name": "[parameters('moodleCommon').lbOutPipName001]",
+            "properties": {
+                "dnsSettings": {
+                    "domainNameLabel": "[parameters('moodleCommon').lbOutName001]"
+                },
+                "publicIPAllocationMethod": "Static"
+            },
+            "tags": {
+                "displayName": "Load Balancer Outbound Public IP 001"
+            }
+        },
+        {
+            "condition": "[not(equals(parameters('moodleCommon').httpsTermination, 'AppGw'))]",
+            "type": "Microsoft.Network/publicIPAddresses",
+            "zones": [
+                "[parameters('moodleCommon').lbZone]"
+            ],
+            "sku": {
+                "name": "[parameters('moodleCommon').lbSku]",
+                "tier": "[parameters('moodleCommon').lbTier]"
+            },
+            "apiVersion": "2019-11-01",
+            "location": "[parameters('moodleCommon').location]",
+            "name": "[parameters('moodleCommon').lbOutPipName002]",
+            "properties": {
+                "dnsSettings": {
+                    "domainNameLabel": "[parameters('moodleCommon').lbOutName002]"
+                },
+                "publicIPAllocationMethod": "Static"
+            },
+            "tags": {
+                "displayName": "Load Balancer Outbound Public IP 002"
+            }
+        },
+        {
             "condition": "[equals(parameters('moodleCommon').httpsTermination, 'AppGw')]",
             "type": "Microsoft.Network/publicIPAddresses",
             "apiVersion": "2019-11-01",
@@ -195,7 +241,9 @@
             },
             "apiVersion": "2017-10-01",
             "dependsOn": [
-                "[concat('Microsoft.Network/publicIPAddresses/',parameters('moodleCommon').lbPipName)]"
+                "[concat('Microsoft.Network/publicIPAddresses/',parameters('moodleCommon').lbPipName)]",
+                "[concat('Microsoft.Network/publicIPAddresses/',parameters('moodleCommon').lbOutPipName001)]",
+                "[concat('Microsoft.Network/publicIPAddresses/',parameters('moodleCommon').lbOutPipName002)]"
             ],
             "location": "[parameters('moodleCommon').location]",
             "name": "[parameters('moodleCommon').lbName]",
@@ -217,13 +265,16 @@
                 ],
                 "loadBalancingRules": [
                     {
-                        "name": "Http",
+                        "name": "HTTP",
                         "properties": {
                             "backendAddressPool": {
                                 "id": "[variables('extBeID')]"
                             },
                             "backendPort": 80,
                             "enableFloatingIP": false,
+                            "enableTcpReset": false,
+                            "loadDistribution": "Default",
+                            "disableOutboundSnat": true,
                             "frontendIPConfiguration": {
                                 "id": "[variables('extFeID')]"
                             },
@@ -236,13 +287,16 @@
                         }
                     },
                     {
-                        "name": "Https",
+                        "name": "HTTPS",
                         "properties": {
                             "backendAddressPool": {
                                 "id": "[variables('extBeID')]"
                             },
                             "backendPort": 443,
                             "enableFloatingIP": false,
+                            "enableTcpReset": false,
+                            "loadDistribution": "Default",
+                            "disableOutboundSnat": true,
                             "frontendIPConfiguration": {
                                 "id": "[variables('extFeID')]"
                             },
@@ -274,7 +328,28 @@
                             "protocol": "Tcp"
                         }
                     }
-                ]
+                ],
+                "inboundNatRules": [],
+                "outboundRules": [
+                    {
+                        "name": "Outboundrule001",
+                        "properties": {
+                            "allocatedOutboundPorts": 1024,
+                            "protocol": "All",
+                            "enableTcpReset": true,
+                            "idleTimeoutInMinutes": 4,
+                            "backendAddressPool": {
+                                "id": "[variables('extBeID')]"
+                            },
+                            "frontendIPConfigurations": [
+                                {
+                                    "id": "[variables('extFeID')]"
+                                }
+                            ]
+                        }
+                    }
+                ],
+                "inboundNatPools": []
             }
         },
         {
