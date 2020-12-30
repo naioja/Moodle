@@ -1177,6 +1177,8 @@
             "enableAccelNwForOtherVmsSwitch": "[parameters('enableAccelNwForOtherVmsSwitch')]",
             "extBeName": "[concat('lb-backend-',variables('resourceprefix'))]",
             "extFeName": "[concat('lb-frontend-',variables('resourceprefix'))]",
+            "extOutName001": "[concat('lb-outbound001-',variables('resourceprefix'))]",
+            "extOutName002": "[concat('lb-outbound002-',variables('resourceprefix'))]",
             "extNatPool": "[concat('lb-natpool-',variables('resourceprefix'))]",
             "extProbeHTTP": "[concat('lb-probe-http-',variables('resourceprefix'))]",
             "extProbeHTTPS": "[concat('lb-probe-https-',variables('resourceprefix'))]",
