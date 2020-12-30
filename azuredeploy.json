@@ -758,6 +758,12 @@
                     "lbPubIp": {
                         "value": "[reference('networkTemplate').outputs.lbPubIp.value]"
                     },
+                    "lbOut001PubIp": {
+                        "value": "[reference('networkTemplate').outputs.lbOut001PubIp.value]"
+                    },
+                    "lbOut002PubIp": {
+                        "value": "[reference('networkTemplate').outputs.lbOut002PubIp.value]"
+                    },
                     "ctlrPubIp": {
                         "value": "[reference('networkTemplate').outputs.ctlrPubIp.value]"
                     }

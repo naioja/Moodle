@@ -444,6 +444,14 @@
             "value": "[if(equals(parameters('moodleCommon').httpsTermination, 'AppGw'), '0.0.0.0', reference(parameters('moodleCommon').lbPipName, '2017-10-01').ipAddress)]",
             "type": "string"
         },
+        "lbOut001PubIp": {
+            "value": "[if(equals(parameters('moodleCommon').httpsTermination, 'AppGw'), '0.0.0.0', reference(parameters('moodleCommon').lbOutPipName001, '2017-10-01').ipAddress)]",
+            "type": "string"
+        },
+        "lbOut002PubIp": {
+            "value": "[if(equals(parameters('moodleCommon').httpsTermination, 'AppGw'), '0.0.0.0', reference(parameters('moodleCommon').lbOutPipName002, '2017-10-01').ipAddress)]",
+            "type": "string"
+        },
         "ctlrPubIp": {
             "value": "[reference(parameters('moodleCommon').ctlrPipName, '2017-10-01').ipAddress]",
             "type": "string"
