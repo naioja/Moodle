@@ -228,7 +228,7 @@
                 "tier": "[parameters('moodleCommon').lbTier]"
 
             },
-            "apiVersion": "2017-10-01",
+            "apiVersion": "2019-11-01",
             "dependsOn": [
                 "[concat('Microsoft.Network/publicIPAddresses/',parameters('moodleCommon').lbPipName)]",
                 "[concat('Microsoft.Network/publicIPAddresses/',parameters('moodleCommon').lbOutPipName001)]",
