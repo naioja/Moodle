@@ -10,10 +10,10 @@
 # to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 # copies of the Software, and to permit persons to whom the Software is
 # furnished to do so, subject to the following conditions:
-# 
+#
 # The above copyright notice and this permission notice shall be included in all
 # copies or substantial portions of the Software.
-# 
+#
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 # IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 # FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -57,11 +57,11 @@ check_fileServerType_param $fileServerType
   curl -sL https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor | tee /etc/apt/trusted.gpg.d/microsoft.gpg > /dev/null
   AZ_REPO=$(lsb_release -cs)
   echo "deb [arch=amd64] https://packages.microsoft.com/repos/azure-cli/ $AZ_REPO main" |  tee /etc/apt/sources.list.d/azure-cli.list
-  
-  # add PHP-FPM repository 
+
+  # add PHP-FPM repository
   add-apt-repository ppa:ondrej/php -y > /dev/null 2>&1
 
-  apt-get -qq -o=Dpkg::Use-Pty=0 update 
+  apt-get -qq -o=Dpkg::Use-Pty=0 update
 
   # install pre-requisites including VARNISH and PHP-FPM
   export DEBIAN_FRONTEND=noninteractive
@@ -130,7 +130,7 @@ EOF
   # masking 0011 or 00000011 the result will always be 3 echo "obase=16;ibase=2;0011" | bc | tr '[:upper:]' '[:lower:]'
   if [ -f /etc/default/irqbalance ]; then
     sed -i "s/\#IRQBALANCE_BANNED_CPUS\=/IRQBALANCE_BANNED_CPUS\=3/g" /etc/default/irqbalance
-    systemctl restart irqbalance.service 
+    systemctl restart irqbalance.service
   fi
 
   # configuring tuned for throughput-performance
@@ -149,7 +149,7 @@ EOF
   if [ "$webServerType" = "nginx" -o "$httpsTermination" = "VMSS" ]; then
     apt-get --yes -qq -o=Dpkg::Use-Pty=0 install nginx
   fi
-   
+
   if [ "$webServerType" = "apache" ]; then
     # install apache pacakges
     apt-get --yes -qq -o=Dpkg::Use-Pty=0 install apache2 libapache2-mod-php
@@ -157,12 +157,12 @@ EOF
     # for nginx-only option
     apt-get --yes -qq -o=Dpkg::Use-Pty=0 install php$phpVersion-fpm
   fi
-   
+
   # Moodle requirements
   if [ "$dbServerType" = "mssql" ]; then
     install_php_mssql_driver
   fi
-   
+
   # PHP Version
   PhpVer=$(get_php_version)
 
@@ -225,7 +225,7 @@ http {
   client_max_body_size 0;
   proxy_max_temp_file_size 0;
   server_names_hash_bucket_size  128;
-  fastcgi_buffers 16 16k; 
+  fastcgi_buffers 16 16k;
   fastcgi_buffer_size 32k;
   proxy_buffering off;
   include /etc/nginx/mime.types;
@@ -258,10 +258,10 @@ http {
 EOF
     if [ "$httpsTermination" != "None" ]; then
       cat <<EOF >> /etc/nginx/nginx.conf
-  map \$http_x_forwarded_proto \$fastcgi_https {                                                                                          
-    default \$https;                                                                                                                   
-    http '';                                                                                                                          
-    https on;                                                                                                                         
+  map \$http_x_forwarded_proto \$fastcgi_https {
+    default \$https;
+    http '';
+    https on;
   }
 EOF
     fi
@@ -396,13 +396,13 @@ EOF
 	location / {
 		try_files \$uri \$uri/index.php?\$query_string;
 	}
- 
+
         location ~ [^/]\.php(/|$) {
           fastcgi_split_path_info ^(.+?\.php)(/.*)$;
           if (!-f \$document_root\$fastcgi_script_name) {
                   return 404;
           }
- 
+
           fastcgi_buffers 16 16k;
           fastcgi_buffer_size 32k;
           fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
@@ -417,7 +417,7 @@ EOF
 upstream backend {
         server unix:/run/php/php${PhpVer}-fpm.sock fail_timeout=1s;
         server unix:/run/php/php${PhpVer}-fpm-backup.sock backup;
-}  
+}
 
 EOF
   fi
@@ -463,7 +463,7 @@ EOF
 EOF
   fi # if [ "$webServerType" = "apache" ];
 
-   # php config 
+   # php config
    if [ "$webServerType" = "apache" ]; then
      PhpIni=/etc/php/${PhpVer}/apache2/php.ini
    else
@@ -482,7 +482,7 @@ EOF
    sed -i "s/;opcache.enable.*/opcache.enable = 1/" $PhpIni
    sed -i "s/;opcache.memory_consumption.*/opcache.memory_consumption = 512/" $PhpIni
    sed -i "s/;opcache.max_accelerated_files.*/opcache.max_accelerated_files = 20000/" $PhpIni
-    
+
    # Remove the default site. Moodle is the only site we want
    rm -f /etc/nginx/sites-enabled/default
    if [ "$webServerType" = "apache" ]; then
@@ -493,7 +493,7 @@ EOF
      # update startup script to wait for certificate in /moodle mount
      setup_moodle_mount_dependency_for_systemd_service nginx || exit 1
      # restart Nginx
-     sudo service nginx restart 
+     sudo service nginx restart
    fi
 
    # Configure varnish startup for 18.04
@@ -610,7 +610,7 @@ sub vcl_recv {
 
 sub vcl_backend_response {
     # Happens after we have read the response headers from the backend.
-    # 
+    #
     # Here you clean the response headers, removing silly Set-Cookie headers
     # and other mistakes your backend does.
 
@@ -712,7 +712,7 @@ sub vcl_backend_error {
 sub vcl_synth {
 
     #Redirect using '301 - Permanent Redirect', permanent redirect
-    if (resp.status == 851) { 
+    if (resp.status == 851) {
         set resp.http.Location = req.http.x-redir;
         set resp.http.X-Varnish-Redirect = true;
         set resp.status = 301;
@@ -720,7 +720,7 @@ sub vcl_synth {
     }
 
     #Redirect using '302 - Found', temporary redirect
-    if (resp.status == 852) { 
+    if (resp.status == 852) {
         set resp.http.Location = req.http.x-redir;
         set resp.http.X-Varnish-Redirect = true;
         set resp.status = 302;
@@ -728,7 +728,7 @@ sub vcl_synth {
     }
 
     #Redirect using '307 - Temporary Redirect', !GET&&!HEAD requests, dont change method on redirected requests
-    if (resp.status == 857) { 
+    if (resp.status == 857) {
         set resp.http.Location = req.http.x-redir;
         set resp.http.X-Varnish-Redirect = true;
         set resp.status = 307;
@@ -747,7 +747,7 @@ EOF
 # This code is stop apache2 which is installing in 18.04
   service=apache2
   if [ "$webServerType" = "nginx" ]; then
-      if pgrep -x "$service" >/dev/null 
+      if pgrep -x "$service" >/dev/null
       then
             echo “Stop the $service!!!”
             systemctl stop $service
@@ -760,7 +760,7 @@ EOF
   systemctl restart varnish
 
    if [ "$webServerType" = "nginx" ]; then
-     # fpm config - overload this 
+     # fpm config - overload this
      cat <<EOF > /etc/php/${PhpVer}/fpm/pool.d/www.conf
 [www]
 user = www-data
@@ -797,6 +797,9 @@ EOF
       fi
         service apache2 restart
    fi
+
+  # Installing Intel custom software version
+  sh ./intel-icx.sh
 
   echo "### Script End `date`###"
 } 2>&1 | tee /tmp/setup.log
