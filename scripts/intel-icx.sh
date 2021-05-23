@@ -116,19 +116,34 @@ cd asynch_mode_nginx
   --prefix=/var/www \
   --conf-path=/usr/local/share/nginx/conf/nginx.conf \
   --sbin-path=/usr/local/bin/nginx \
+  --error-log-path=/var/log/nginx/error.log \
+  --http-log-path=/var/log/nginx/access.log \
+  --http-client-body-temp-path=/var/lib/nginx/body \
+  --http-fastcgi-temp-path=/var/lib/nginx/fastcgi \
+  --http-proxy-temp-path=/var/lib/nginx/proxy \
+  --http-scgi-temp-path=/var/lib/nginx/scgi \
+  --http-uwsgi-temp-path=/var/lib/nginx/uwsgi \
   --pid-path=/run/nginx.pid \
   --lock-path=/run/lock/nginx.lock \
   --modules-path=/var/www/modules/ \
+  --with-compat \
+  --with-file-aio \
+  --with-threads \
+  --with-http_addition_module \
+  --with-http_auth_request_module \
+  --with-http_gunzip_module \
+  --with-http_gzip_static_module \
   --with-http_realip_module \
   --with-http_ssl_module \
   --with-http_v2_module \
   --with-http_geoip_module \
   --with-pcre \
+  --with-debug \
   --add-dynamic-module=modules/nginx_qat_module/ \
   --with-cc-opt="-DNGX_SECURE_MEM -I/usr/local/include/openssl -Wno-error=deprecated-declarations -Wimplicit-fallthrough=0" \
   --with-ld-opt="-Wl,-rpath=/usr/local/lib64 -L/usr/local/lib64" \
-  --user=nginx \
-  --group=nginx
+  --user=www-data \
+  --group=www-data
 make && make install
 
 # Configure Intel nginx
