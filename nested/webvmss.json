@@ -151,7 +151,12 @@
                         }
                     },
                     "storageProfile": {
-                        "imageReference": "[parameters('moodleCommon').osType]",
+                        "imageReference": {
+                            "publisher":"Canonical",
+                            "offer":"UbuntuServer",
+                            "sku":"18_04-lts-gen2",
+                            "version":"latest"
+                        },
                         "osDisk": {
                             "caching": "ReadOnly",
                             "createOption": "FromImage",
