@@ -917,11 +917,14 @@ cd asynch_mode_nginx
   --pid-path=/run/nginx.pid \
   --lock-path=/run/lock/nginx.lock \
   --modules-path=/var/www/modules/ \
+  --error-log-path=/var/log/nginx/error.log \
+  --http-log-path=/var/log/nginx/access.log \
   --with-http_realip_module \
   --with-http_ssl_module \
   --with-http_v2_module \
   --with-http_geoip_module \
   --with-pcre \
+  --with-debug \
   --add-dynamic-module=modules/nginx_qat_module/ \
   --with-cc-opt="-DNGX_SECURE_MEM -I/usr/local/include/openssl -Wno-error=deprecated-declarations -Wimplicit-fallthrough=0" \
   --with-ld-opt="-Wl,-rpath=/usr/local/lib64 -L/usr/local/lib64" \
@@ -941,6 +944,11 @@ systemctl daemon-reload
 # Configure systemd to load custom version nginx
 sed -i 's|include\ /etc/nginx/modules-enabled/\*\.conf\;|load_module\ /var/www/modules/ngx_ssl_engine_qat_module.so\;|g' /usr/local/share/nginx/conf/nginx.conf
 sed -i '3 a load_module /var/www/modules/ngx_ssl_engine_qat_module.so;' /usr/local/share/nginx/conf/nginx.conf
+
+# enable nginx to listen on port 80
+sed -i 's|listen\ 81\ default\;|listen\ 80\ default\;|g' /usr/local/share/nginx/conf/nginx.conf
+systemctl mask varnish
+systemctl stop varnish
 
 systemctl restart nginx
 
