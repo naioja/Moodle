@@ -95,7 +95,6 @@ check_fileServerType_param "$fileServerType"
     php-gd \
     php-pgsql \
     php-mysql \
-    php-xmlrpc \
     php-intl \
     php-xml \
     php-bz2
