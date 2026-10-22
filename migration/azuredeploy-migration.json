@@ -185,9 +185,9 @@
         "ubuntuVersion": {
             "type": "string",
             "allowedValues": [
-                "server"
+                "24_04-lts-gen2"
             ],
-            "defaultValue": "server"
+            "defaultValue": "24_04-lts-gen2"
         }
     },
     "variables": {
