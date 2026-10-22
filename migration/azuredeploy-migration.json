@@ -38,10 +38,9 @@
         },
         "moodleVersion": {
             "allowedValues": [
-                "MOODLE_39_STABLE",
-                "MOODLE_38_STABLE"
+                "MOODLE_53_STABLE"
             ],
-            "defaultValue": "MOODLE_38_STABLE",
+            "defaultValue": "MOODLE_53_STABLE",
             "metadata": {
                 "description": "The Moodle version you want to install."
             },
@@ -80,11 +79,9 @@
         },
         "phpVersion": {
             "allowedValues": [
-                "7.2",
-                "7.3",
-                "7.4"
+                "8.3"
             ],
-            "defaultValue": "7.4",
+            "defaultValue": "8.3",
             "metadata": {
                 "description": "php version"
             },
@@ -188,9 +185,9 @@
         "ubuntuVersion": {
             "type": "string",
             "allowedValues": [
-                "18.04-LTS"
+                "server"
             ],
-            "defaultValue": "18.04-LTS"
+            "defaultValue": "server"
         }
     },
     "variables": {

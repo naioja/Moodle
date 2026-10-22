@@ -194,9 +194,20 @@ The Moodle version you want to install.
 
 Type: string
 
-Possible Values: ["MOODLE_35_STABLE","MOODLE_34_STABLE","v3.4.3","v3.4.2","v3.4.1","MOODLE_33_STABLE","MOODLE_32_STABLE","MOODLE_31_STABLE","MOODLE_30_STABLE","MOODLE_29_STABLE"]
+Possible Values: ["MOODLE_53_STABLE"]
 
-Default: MOODLE_35_STABLE
+Default: MOODLE_53_STABLE
+
+
+### phpVersion
+
+PHP version to install. Moodle 5.3 requires PHP 8.3.
+
+Type: string
+
+Possible Values: ["8.3"]
+
+Default: 8.3
 
 
 ### sshPublicKey
@@ -758,5 +769,4 @@ Type: string
 Possible Values: null
 
 Default: [resourceGroup().location]
-
 
