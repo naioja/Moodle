@@ -146,9 +146,9 @@
         {
             "type": "Microsoft.Network/loadBalancers",
             "sku": {
-                "name": "Basic"
+                "name": "Standard"
             },
-            "apiVersion": "2017-10-01",
+            "apiVersion": "2024-05-01",
             "location": "[parameters('location')]",
             "name": "[variables('nfsHaLbName')]",
             "properties": {

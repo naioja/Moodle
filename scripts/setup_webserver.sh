@@ -29,8 +29,6 @@ moodle_on_azure_configs_json_path=${1}
 
 get_setup_params_from_configs_json "$moodle_on_azure_configs_json_path" || exit 99
 
-echo "$glusterNode"           >> /tmp/vars.txt
-echo "$glusterVolume"         >> /tmp/vars.txt
 echo "$siteFQDN"              >> /tmp/vars.txt
 echo "$httpsTermination"      >> /tmp/vars.txt
 echo "$syslogServer"          >> /tmp/vars.txt
@@ -129,12 +127,7 @@ EOF
   systemctl enable tuned
   tuned-adm profile throughput-performance
 
-  if [ "$fileServerType" = "gluster" ]; then
-    #configure gluster repository & install gluster client
-    add-apt-repository ppa:gluster/glusterfs-9 --yes
-    apt_update_noninteractive
-    apt_install_noninteractive glusterfs-client
-  elif [ "$fileServerType" = "azurefiles" ]; then
+  if [ "$fileServerType" = "azurefiles" ]; then
     apt_install_noninteractive \
       linux-modules-extra-azure \
       cifs-utils >> /tmp/apt.log
@@ -163,14 +156,7 @@ EOF
   # PHP Version
   PhpVer=$(get_php_version)
 
-  if [ "$fileServerType" = "gluster" ]; then
-    # Mount gluster fs for /moodle
-    sudo mkdir -p /moodle
-    sudo chown www-data /moodle
-    sudo chmod 770 /moodle
-    sudo echo -e 'Adding Gluster FS to /etc/fstab and mounting it'
-    setup_and_mount_gluster_moodle_share "$glusterNode" "$glusterVolume"
-  elif [ $fileServerType = "nfs" ]; then
+  if [ "$fileServerType" = "nfs" ]; then
     # mount NFS export (set up on controller VM--No HA)
     echo -e '\n\rMounting NFS export from '$nfsVmName':/moodle on /moodle and adding it to /etc/fstab\n\r'
     configure_nfs_client_and_mount $nfsVmName /moodle /moodle
@@ -299,7 +285,7 @@ EOF
       chown www-data:www-data -R $htmlRootDir && sync
       setup_html_local_copy_cron_job
     fi
-    if [ "$fileServerType" = "nfs" -o "$fileServerType" = "nfs-ha" -o "$fileServerType" = "nfs-byo" -o "$fileServerType" = "gluster" ]; then
+    if [[ "$fileServerType" == "nfs" || "$fileServerType" == "nfs-ha" || "$fileServerType" == "nfs-byo" ]]; then
       mkdir -p /var/www/html/moodle
       rsync -a /moodle/html/moodle/ $htmlRootDir/
       chown www-data:www-data -R $htmlRootDir && sync

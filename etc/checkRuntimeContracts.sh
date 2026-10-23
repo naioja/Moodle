@@ -22,7 +22,6 @@ assert_json azuredeploy.json '
     .autoscaleVmSku.defaultValue == "Standard_D2ds_v5" and
     .fileServerVmSku.defaultValue == "Standard_D2ds_v5" and
     .elasticVmSku.defaultValue == "Standard_D2ds_v5" and
-    .tikaVmSku.defaultValue == "Standard_D2ds_v5" and
     .enableAccelNwForCtlrVmSwitch.defaultValue == true and
     .enableAccelNwForOtherVmsSwitch.defaultValue == true
 '
@@ -64,9 +63,10 @@ assert_json azuredeploy.json "
     .parameters.dbServerType.defaultValue == \"mysqlflex\" and
     .parameters.mysqlflexVersion.defaultValue == \"8.4\" and
     .parameters.mysqlflexVersion.allowedValues == [\"8.4\"] and
-    .parameters.mysqlVersion.defaultValue == \"8.0.21\" and
     .variables.moodleCommon.mysqlflexVersion == \"[parameters('mysqlflexVersion')]\" and
-    .variables.moodleCommon.mysqlVersion == \"[parameters('mysqlVersion')]\"
+    (.parameters.dbServerType.allowedValues | index(\"mysql\") == null) and
+    (.parameters.fileServerType.allowedValues | index(\"gluster\") == null) and
+    (.parameters | has(\"tikaService\") | not)
 "
 
 assert_json nested/db-mysqlflex.json "
@@ -80,21 +80,46 @@ assert_json nested/db-mysqlflex.json "
     .variables.publicNetworkData.publicNetworkAccess == \"Enabled\"
 "
 
-assert_json nested/db-mysql.json "
-    .resources[0].properties.version == \"[parameters('moodleCommon').mysqlVersion]\"
-"
-
 assert_json migration/azuredeploy-migration.json "
     .parameters.dbServerType.defaultValue == \"mysqlflex\" and
     (.parameters.dbServerType.allowedValues | index(\"mysqlflex\") != null) and
     .parameters.mysqlflexVersion.defaultValue == \"8.4\" and
     .parameters.mysqlflexVersion.allowedValues == [\"8.4\"] and
-    .parameters.mysqlVersion.defaultValue == \"8.0.21\" and
-    .parameters.mysqlVersion.allowedValues == [\"8.0.21\"] and
+    (.parameters | has(\"mysqlVersion\") | not) and
+    (.parameters.dbServerType.allowedValues | index(\"mysql\") == null) and
+    .resources[0].properties.parameters.postgresVersion.value == \"18\" and
     .resources[0].properties.parameters.mysqlflexVersion.value == \"[parameters('mysqlflexVersion')]\"
 "
 
 assert_json managedApplication/parameters-template.json '.dbServerType.value == "mysqlflex"'
+
+assert_json azuredeploy.json '
+    .parameters.postgresVersion.defaultValue == "18" and
+    .parameters.postgresVersion.allowedValues == ["18"] and
+    .parameters.postgresStorageSizeGiB.defaultValue >= 32
+'
+assert_json nested/db-postgres.json '
+    .resources[0].type == "Microsoft.DBforPostgreSQL/flexibleServers" and
+    .resources[0].apiVersion == "2025-08-01" and
+    .resources[0].properties.backup.backupRetentionDays == 35
+'
+for retired_path in nested/db-mysql.json nested/tika.json nested/tikaconfig.json nested/gluster.json nested/glustervm.json nested/glustervmsetup.json scripts/install_tika.sh scripts/install_gluster.sh; do
+    [[ ! -e "$repository_root/$retired_path" ]]
+done
+storage_type_helper="$(sed -n '/^function check_fileServerType_param$/,/^}/p' "$repository_root/scripts/helper_functions.sh")"
+[[ -n "$storage_type_helper" ]]
+if printf '%s\n%s\n' "$storage_type_helper" 'check_fileServerType_param gluster' | bash > /dev/null; then
+    printf 'FAIL: removed Gluster storage type was accepted\n' >&2
+    false
+fi
+
+assert_json nested/storageAccount.json "
+    .resources[0].kind == \"StorageV2\" and
+    .resources[1].kind == \"[if(equals(parameters('moodleCommon').storageAccountType, 'Premium_LRS'), 'FileStorage', 'StorageV2')]\"
+"
+assert_json nested/webvmss.json '
+    all(.resources[] | select(.type == "Microsoft.Storage/storageAccounts"); .kind == "StorageV2")
+'
 
 unzip_helper="$(sed -n '/^function get_moodle_unzip_dir_from_moodle_version {/,/^}/p' "$repository_root/scripts/helper_functions.sh")"
 [[ -n "$unzip_helper" ]]
@@ -169,7 +194,7 @@ for local_copy in false true; do
     if [[ "$local_copy" == true ]]; then
         expected_root=/var/www/html/moodle/public
     fi
-    for storage_backend in azurefiles nfs nfs-ha nfs-byo gluster; do
+    for storage_backend in azurefiles nfs nfs-ha nfs-byo; do
         actual_root="$(printf '%s\n%s\n%s\n' \
             "$stubbed_commands" "$web_root_setup" "printf '%s' \"\$htmlRootDir\"" |
             env htmlLocalCopySwitch="$local_copy" fileServerType="$storage_backend" \
