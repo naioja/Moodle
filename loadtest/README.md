@@ -7,6 +7,25 @@ this repository.
 
 ## Prerequisites
 
+### Native Tool Installation
+
+The isolated installer pins JMeter 5.6.3, MySQL Connector/J 26.10.0,
+PostgreSQL JDBC 42.7.14, plugin manager 2.0 and cmdrunner 2.3. It requires a
+maintained JDK 17 or newer, Bash, jq, curl, tar and the standard checksum tools.
+All downloads use HTTPS and must match the digests in [toolchain.json](toolchain.json).
+
+```bash
+bash loadtest/install-jmeter.sh "$PWD/.cache/loadtest-install"
+.cache/loadtest-install/apache-jmeter-5.6.3/bin/jmeter --version
+```
+
+This installs and verifies tools only; it does not create Azure resources or
+run a workload. Third-party plugins required by individual JMX plans, the
+historical Moosh setup, course restore/login/exam flows and distributed tests
+still require separate compatibility and safety validation against Moodle 5.3.
+The referenced JMX and MBZ fixtures are preserved. The legacy orchestration
+functions below are not certified by a successful tool-installation check.
+
 To run load tests using the resources in this directory, you'll want
 to spin up a VM to manage the [Load Test](Deploy_Load_Test_VM.md) in
 your Azure subscription. This VM will generate the traffic, running it

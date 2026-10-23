@@ -6,7 +6,7 @@ repository_root="${1:-$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)}"
 assert_json() {
     local template_path="$1"
     local expression="$2"
-    if ! jq -e "$expression" "$repository_root/$template_path" > /dev/null; then
+    if ! jq -e "$expression" "$repository_root/$template_path" >/dev/null; then
         printf 'FAIL: runtime contract in %s\n' "$template_path" >&2
         return 1
     fi
@@ -102,16 +102,16 @@ assert_json azuredeploy.json '
 '
 assert_json nested/db-postgres.json '
     .resources[0].type == "Microsoft.DBforPostgreSQL/flexibleServers" and
-    .resources[0].apiVersion == "2025-08-01" and
+    .resources[0].apiVersion == "2026-10-01" and
     .resources[0].properties.backup.backupRetentionDays == 35
 '
-grep -Fq 'CREATE DATABASE ${moodledbname} OWNER ${moodledbuser};' "$repository_root/scripts/install_moodle.sh"
+grep -Fq "CREATE DATABASE \${moodledbname} OWNER \${moodledbuser};" "$repository_root/scripts/install_moodle.sh"
 if grep -Fq 'mysqlPgresVcores' "$repository_root/loadtest/loadtest.sh"; then
     printf 'FAIL: load test still passes retired shared database sizing parameters\n' >&2
     false
 fi
-grep -Fq 'mysqlflexSkuName=$db_sku mysqlflexStgSizeGiB=$db_size_gb' "$repository_root/loadtest/loadtest.sh"
-grep -Fq 'postgresSkuName=$db_sku postgresStorageSizeGiB=$db_size_gb' "$repository_root/loadtest/loadtest.sh"
+grep -Fq "mysqlflexSkuName=\$db_sku mysqlflexStgSizeGiB=\$db_size_gb" "$repository_root/loadtest/loadtest.sh"
+grep -Fq "postgresSkuName=\$db_sku postgresStorageSizeGiB=\$db_size_gb" "$repository_root/loadtest/loadtest.sh"
 assert_json nested/network-subnets.json '
     any(.resources[]; .type == "Microsoft.Network/natGateways") and
     any(.resources[]; .type == "Microsoft.Network/publicIPAddresses" and .sku.name == "Standard") and
@@ -122,7 +122,7 @@ for retired_path in nested/db-mysql.json nested/tika.json nested/tikaconfig.json
 done
 storage_type_helper="$(sed -n '/^function check_fileServerType_param$/,/^}/p' "$repository_root/scripts/helper_functions.sh")"
 [[ -n "$storage_type_helper" ]]
-if printf '%s\n%s\n' "$storage_type_helper" 'check_fileServerType_param gluster' | bash > /dev/null; then
+if printf '%s\n%s\n' "$storage_type_helper" 'check_fileServerType_param gluster' | bash >/dev/null; then
     printf 'FAIL: removed Gluster storage type was accepted\n' >&2
     false
 fi
@@ -145,7 +145,7 @@ grep -Fq 'Default: MOODLE_503_STABLE' "$repository_root/docs/Parameters.md"
 assert_text() {
     local content="$1"
     local expected_text="$2"
-    if ! grep -Fq -- "$expected_text" <<< "$content"; then
+    if ! grep -Fq -- "$expected_text" <<<"$content"; then
         printf 'FAIL: missing generated configuration: %s\n' "$expected_text" >&2
         return 1
     fi
@@ -181,7 +181,8 @@ web_root_setup="$(awk '
 ' "$repository_root/scripts/setup_webserver.sh")"
 [[ -n "$web_root_setup" ]]
 
-stubbed_commands="$(cat <<'STUBS'
+stubbed_commands="$(
+    cat <<'STUBS'
 set -euo pipefail
 mkdir() { :; }
 chown() { :; }
@@ -218,7 +219,7 @@ for local_copy in false true; do
 
     rendered_nginx="$(render_site_template "$frontend_nginx" "$expected_root")"
     rendered_apache="$(render_site_template "$frontend_apache" "$expected_root")"
-    [[ "$(grep -Fc "root $expected_root;" <<< "$rendered_nginx")" -eq 2 ]]
+    [[ "$(grep -Fc "root $expected_root;" <<<"$rendered_nginx")" -eq 2 ]]
     assert_text "$rendered_nginx" "try_files \$uri \$uri/ /r.php\$is_args\$args;"
     assert_text "$rendered_nginx" "fastcgi_param PATH_INFO \$fastcgi_path_info;"
     assert_text "$rendered_nginx" 'rewrite ^ /r.php last;'
@@ -229,7 +230,7 @@ for local_copy in false true; do
 done
 
 rendered_controller="$(render_site_template "$controller_nginx" /moodle/html/moodle/public)"
-[[ "$(grep -Fc 'root /moodle/html/moodle/public;' <<< "$rendered_controller")" -eq 2 ]]
+[[ "$(grep -Fc 'root /moodle/html/moodle/public;' <<<"$rendered_controller")" -eq 2 ]]
 assert_text "$rendered_controller" "try_files \$uri \$uri/ /r.php\$is_args\$args;"
 assert_text "$rendered_controller" "fastcgi_param PATH_INFO \$fastcgi_path_info;"
 

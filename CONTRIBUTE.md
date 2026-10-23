@@ -103,13 +103,92 @@ shell formatting, Python lint and secrets. Gitleaks checks staged changes with
 redacted output; `--all-files` does not turn that hook into a history scan.
 The broader runtime contracts run at pre-push or manual stage with mocked
 commands, not provisioning scripts. They require jq and do not prove Azure
-provider acceptance or replace a full ARM resource/security analyzer.
+provider acceptance.
+
+### Native ARM Checks
+
+On Linux x86_64, bootstrap the pinned PowerShell, ARM-TTK and PSRule tools once.
+Downloads stay in the ignored workspace cache; the bootstrap verifies the
+PowerShell and ARM-TTK archive checksums. No container, system installation,
+Azure login or Az.Accounts module is required.
+
+```bash
+bash etc/installArmTools.sh
+bash etc/checkArmTemplates.sh Schemas
+bash etc/checkArmTemplates.sh SelfTest
+pre-commit run arm-contracts --hook-stage pre-push --all-files
+pre-commit run arm-best-practices --hook-stage manual --all-files
+```
+
+The pre-push ARM gate checks every local deployment template, resource API,
+linked-template parameter/output contract, retained database/search route,
+consumer parameter name and referenced script. Cached schemas check literal
+resource shapes. Mutation tests verify that deliberately broken contracts and
+invalid resource values fail. A missing tool, catalog, schema or linked target
+is an error, not a skipped success. Checks use the current local revision, not
+the upstream `_artifactsLocation` URL.
+
+The strict manual audit runs both ARM-TTK and PSRule and writes bounded JSON
+reports under `.cache/arm-tools/reports`. ARM-TTK stages repository artifacts
+only. PSRule expands each template independently with generated dummy parameter
+files and a common object evaluated from the root template. External
+`templateLink` children are not expanded by PSRule, so root-only scanning is
+insufficient. Explicit expansion and evaluated-rule counts prevent empty scans
+from passing. The full audit currently fails on existing security/design debt
+and reports unsupported-resource or rule-engine coverage gaps; these are not
+blanket-suppressed or treated as production certification.
+
+The API catalog records per-resource stable versions and pinned Microsoft
+schema sources. MySQL 8.4 retains a documented preview-API exception; the VMSS
+instance-NIC read uses its separately documented Network operation contract.
+Deployment APIs and operation APIs are not interchangeable. API age is not
+evidence of retirement. Elasticsearch provisioning and its dedicated templates
+are unchanged by this update; exact file-scoped API pins keep those templates
+under contract and shape checks without upgrading their deployment APIs.
+Published schema versions are not observed subscription defaults. Uniform VMSS
+orchestration is explicit to avoid API-default behavior changes; this is not
+an egress or database-TLS hardening change.
+
+The shape check allows unevaluated ARM expression leaves and overlapping
+generated expression alternatives. It reports narrow normalization of the
+published Recovery Services polymorphic-base schema contradiction while still
+checking derived policy properties. It cannot validate evaluated names,
+provider acceptance, region/SKU availability, permissions, guest provisioning
+or backup recovery. Secure/external references may remain placeholders.
+
+Microsoft's [ARM-TTK guidance](https://learn.microsoft.com/azure/azure-resource-manager/templates/test-toolkit),
+[linked-template guidance](https://learn.microsoft.com/azure/azure-resource-manager/templates/linked-templates)
+and [PSRule template expansion](https://azure.github.io/PSRule.Rules.Azure/using-templates/)
+describe these separate validation layers. Azure validation and what-if are
+authenticated cloud operations, even at Template validation level; they are
+not offline emulators and are never invoked by these hooks.
 
 The full scan currently exposes legacy ShellCheck and shell-formatting
 findings. Do not hide these with blanket exclusions or reformat unrelated
 files. The formatter hook never rewrites files; make intentional fixes and
 rerun the affected checks. Optional integration or VM image builds remain
 separate from Git hooks.
+
+### Offline CI Runtime
+
+Travis uses Ubuntu Noble, Node 24.22.1 LTS and Python 3.15.1. The image's Python
+3.14 bootstraps pinned uv 0.13.5; validation runs in an isolated Python 3.15.1
+environment with pre-commit 4.7.0. Grunt dependencies are exact and the npm
+lockfile is checked in; use `npm ci --ignore-scripts` before `npm test`.
+
+The existing Python entry point now runs only npm, native pre-commit,
+pre-push ARM/runtime contracts and ARM mutation tests. It no longer imports
+the legacy Azure deployment tester or generates deployment credentials.
+Run it with the chosen validation interpreter and pinned Node on `PATH`:
+
+```bash
+export PRE_COMMIT_HOME="$PWD/.cache/pre-commit"
+python -W default etc/travis.py
+```
+
+The whole-repository lint scan remains strict and currently reports legacy
+shell lint/formatting debt. The separate legacy live-deployment tester has not
+been ported or certified. No default CI step provisions or deletes resources.
 
 ## Planning
 

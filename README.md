@@ -7,6 +7,29 @@ This repository contains guides and [Azure Resource Manager](https://docs.micros
 If you have an Azure account you can deploy Moodle via the [Azure portal](https://portal.azure.com) using the button below, or you can [deploy Moodle via the
 CLI](docs/Deploy.md). Please note that while you can use an [Azure free account](https://azure.microsoft.com/en-us/free/) to get started depending on which template configuration you choose you will likely be required to upgrade to a paid account.
 
+## Current Fork Baseline
+
+The default branch of [naioja/Moodle](https://github.com/naioja/Moodle) is `main`. It preserves the merged modernization work on current upstream history, including upstream deployment-command and documentation-link fixes. The previous `master` and other existing branches remain available with their original histories; this repair did not force-push or delete them. Base new work on `main` rather than merging the legacy history back into it.
+
+The merged deployment baseline is Moodle 5.3 (`MOODLE_503_STABLE`), PHP 8.3 and Ubuntu 24.04 x64 Gen2, with Ddsv5 VM defaults and accelerated networking. The controller default supports up to eight data disks. Database choices are MySQL Flexible Server 8.4, PostgreSQL Flexible Server 18 and Azure SQL Database. Standard storage accounts use `StorageV2`, while Premium Azure Files retains `FileStorage`. Load balancers use Standard SKU and Application Gateway choices are `Standard_v2` or `WAF_v2`.
+
+MySQL Single Server, PostgreSQL Single Server, Gluster and Tika provisioning paths have been retired. Search document file indexing is disabled following Tika removal; optional search engines and plugins have not been certified against the new Moodle baseline.
+
+These changes are not a production certification or an unattended in-place upgrade. Existing installations need consistent database, files, code/plugin and configuration backups, a rehearsed restore, and an approved migration/cutover plan. MySQL 8.4 currently uses a preview management API; provider/region acceptance and full runtime validation remain deployment gates.
+
+### Merged Pull Requests
+
+| Pull Request | Merged | Delivered Changes |
+| --- | --- | --- |
+| [#2: Moodle 5.3 compatibility](https://github.com/naioja/Moodle/pull/2) | 2026-10-23 | Correct Moodle branch/archive selection; Ubuntu 24.04 Gen2 and Ddsv5 defaults; controller disk-capacity alignment; Moodle `public` web roots, plugin paths and routing; MySQL Flexible Server 8.4; focused runtime contracts. |
+| [#40: Native pre-commit validation](https://github.com/naioja/Moodle/pull/40) | 2026-10-23 | Pinned native JSON/YAML/XML, ShellCheck, Bash syntax, check-only shfmt, Ruff and redacted Gitleaks checks; pre-push runtime contracts; contributor setup. Merged into the PR #2 branch and included in the current baseline. |
+| [#41: Platform modernization](https://github.com/naioja/Moodle/pull/41) | 2026-10-23 | Remove retired Single Server, Gluster and Tika paths; preserve Premium Files while replacing GPv1 account creation; introduce PostgreSQL Flexible Server 18; restrict LB/Application Gateway SKUs; repair NFS-HA networking and related parameter contracts; extend regression checks. |
+| [#1: Historical web VMSS update](https://github.com/naioja/Moodle/pull/1) | 2020-11-30 | Historical merge into `aj_fd_limits`, not a merge into the current `main` branch or part of the recent modernization batch. |
+
+The fork-history repair was performed separately, not through another PR. ARM/API validation tooling, Elasticsearch modernization, Travis/runtime updates, JMeter/JDBC updates and complete migration/documentation certification are not delivered by the PRs above. Remaining work is tracked in the [audit issues](https://github.com/naioja/Moodle/issues).
+
+**Deployment scope:** The portal buttons below still reference upstream `Azure/Moodle/master`, not this fork's `main`. To evaluate this fork's merged changes, use [the root template](azuredeploy.json) from one committed fork revision and set `_artifactsLocation` to that same revision's raw-content base URL. Preset, migration and managed-application artifact origins still require review; do not mix template and bootstrap revisions.
+
 ## Deployment Introduction
 
 In the table below, we provide a number of default configurations at different scales of operation. These options minimize the configuration you would otherwise need to do manually; these options are essentially "good practice" recommendations. Once deployed, you will have full access to the Azure resources and can adjust the deployment to suit your needs. If you would prefer to have full control over all the configuration options at deployment, please refer to [the fully configurable section](#Fully Configurable) right after the Predefined deployment option section.
@@ -23,10 +46,10 @@ Below are a list of pre-defined/restricted deployment options based on typical d
 
 | Deployment Type | Description | Launch |
 | --- | --- | ---|
-| Minimal  | This deployment will use NFS, Azure Database for MySQL Flexible Server (Burstable SKU 2 vCores), and smaller autoscale web frontend VM sku (1 core) that'll give faster deployment time (less than 30 minutes) and requires only 2 VM cores currently that'll fit even in a free trial Azure subscription.|[![Deploy to Azure Minimally](http://azuredeploy.net/deploybutton.png)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FAzure%2FMoodle%2Fmaster%2Fazuredeploy-minimal.json)|
+| Minimal  | Uses NFS, Azure Database for MySQL Flexible Server (Burstable SKU 2 vCores), and a smaller autoscale web frontend. The fork's Gen2-compatible VM defaults require a fresh regional quota and cost review; deployment time and free-trial capacity are not guaranteed.|[![Deploy to Azure Minimally](http://azuredeploy.net/deploybutton.png)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FAzure%2FMoodle%2Fmaster%2Fazuredeploy-minimal.json)|
 | Small to Mid-Size | Supporting up to 1000 concurrent users.  This deployment will use NFS (no high availability) and Azure Database for MySQL Flexible Server(General Purpose SKU 8 vCores), without other options like elastic search or redis cache.|[![Deploy to Azure Minimally](http://azuredeploy.net/deploybutton.png)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FAzure%2FMoodle%2Fmaster%2Fazuredeploy-small2mid-noha.json)|
 |Large size deployment (with high availability)| Supporting more than 2000 concurrent users. This deployment will use Azure Premium Files, Azure Database for MySQL Flexible Server (General Purpose SKU 16 vCores) and redis cache, without other options like elastic search. |[![Deploy to Azure Minimally](http://azuredeploy.net/deploybutton.png)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FAzure%2FMoodle%2Fmaster%2Fazuredeploy-large-ha.json)|
-| Maximum |This maximal deployment will use Azure Premium Files, Azure Database for MySQL (Business Critical SKU 64 vCores), redis cache, elastic search (3 VMs), and pretty large storage sizes (both data disks and DB).|[![Deploy to Azure Maximally](http://azuredeploy.net/deploybutton.png)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FAzure%2FMoodle%2Fmaster%2Fazuredeploy-maximal.json)|
+| Maximum |This maximal deployment will use Azure Premium Files, Azure Database for MySQL Flexible Server (Business Critical SKU 64 vCores), redis cache, elastic search (3 VMs), and pretty large storage sizes (both data disks and DB).|[![Deploy to Azure Maximally](http://azuredeploy.net/deploybutton.png)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FAzure%2FMoodle%2Fmaster%2Fazuredeploy-maximal.json)|
 
 **NOTE**: The above deployment templates use hard coded Azure Database for MySQL Flexible Server SKUs for easier configuration and quicker deployment of Moodle workloads. If your deployment fails for any reason, please revert to the fully configurable template where possible and change the Azure Database for MySQL Flexible Server parameters accordingly.
 
@@ -45,20 +68,19 @@ This template set deploys the following infrastructure core to your Moodle insta
 - Autoscaling web frontend layer (Nginx for https termination, Varnish for caching, Apache/php or nginx/php-fpm)
 - Private virtual network for frontend instances
 - Controller instance running cron and handling syslog for the autoscaled site
-- [Azure Load balancer](https://azure.microsoft.com/en-us/services/load-balancer/) to balance across the autoscaled instances
-- [Azure Database for MySQL](https://azure.microsoft.com/en-us/services/mysql/) or [Azure Database for PostgreSQL](https://azure.microsoft.com/en-us/services/postgresql/) or [Azure SQL Database](https://azure.microsoft.com/en-us/services/sql-database/)
+- [Azure Standard Load Balancer](https://azure.microsoft.com/en-us/services/load-balancer/) to balance across the autoscaled instances
+- [Azure Database for MySQL Flexible Server](https://learn.microsoft.com/en-us/azure/mysql/flexible-server/) or [Azure Database for PostgreSQL Flexible Server](https://learn.microsoft.com/en-us/azure/postgresql/flexible-server/) or [Azure SQL Database](https://azure.microsoft.com/en-us/services/sql-database/)
 - For large production deployments Azure Premium Files is recommended for file storage as it provides higher performance and availability with the addition of metadata-caching [https://learn.microsoft.com/en-us/azure/storage/files/smb-performance#metadata-caching-for-premium-smb-file-shares](https://learn.microsoft.com/en-us/azure/storage/files/smb-performance#metadata-caching-for-premium-smb-file-shares)
 
 This template set *optionally* configures the following additional infrastructure:
 
 - [Azure Backup](https://azure.microsoft.com/en-us/services/backup/) for Moodle site backups
 - [Azure Blob Storage](https://azure.microsoft.com/en-us/services/storage/blobs/) for ObjectFS (Moodle sitedata)
-- [Azure Application Gateway](https://azure.microsoft.com/en-us/services/application-gateway/) for SSL offloading and WAF
+- [Azure Application Gateway v2](https://azure.microsoft.com/en-us/services/application-gateway/) for SSL offloading and WAF
 - [Azure Redis Cache](https://azure.microsoft.com/en-us/services/cache/) instance for Moodle caching
 - [Azure DDoS Protection](https://azure.microsoft.com/en-us/services/ddos-protection/) plan to secure your Moodle site from DDoS attacks
 - [Azure Key Vault](https://azure.microsoft.com/en-us/services/key-vault/) for storing your CA Cert for your Moodle site
 - [Azure Search](https://azure.microsoft.com/en-us/services/search/) instance or three Elasticsearch VMs for HA Global Search in Moodle
-- [Apache Tika](http://tika.apache.org/) VMs for search indexing in Moodle
 
 ![network_diagram](images/Moodle-Architecture-PremiumFiles.png "Diagram of deployed stack")
 
@@ -119,7 +141,7 @@ The template is highly configurable. Full details of the configuration options c
 
 5. **How does this template relate to other Moodle offerings available on the Azure Marketplace?** It is generally not a good idea to run Moodle as a single VM in a production setting. This template is highly configurable and allows for high availability and redundancy.
 
-6. **How does this template relate to this [Azure Quickstart Template for Moodle](https://github.com/Azure/azure-quickstart-templates/tree/master/application-workloads/moodle/moodle-scalable-cluster-ubuntu)?** This repo is the working repo for the quickstart template. We will be pushing changes from this template to the quickstart template on a regular cadence.
+6. **How does this template relate to this [Azure Quickstart Template for Moodle](https://github.com/Azure/azure-quickstart-templates/tree/master/application-workloads/moodle/moodle-scalable-cluster-ubuntu)?** The upstream repository is the working repo for that quickstart template. Changes in this fork are not automatically published to the quickstart or upstream repository.
 
 7. **I am already running Moodle on Azure. How does this work benefit me?** We are looking for painpoints from you and the broader Moodle on Azure community that we can help solve. We are also looking to understand where our implementation of Moodle on Azure outperforms or underperforms other implementations such as yours that are out in the wild. If you have observations, performance benchmarks or just general feedback about your experience running Moodle on Azure that you'd like to share we're extremely interested! Load testing is a very big area of focus, so if you have scripts you wouldn't mind contributing please let us know.
 
@@ -135,19 +157,23 @@ The template is highly configurable. Full details of the configuration options c
 
 13. **How can I help with this effort?** Please see below.
 
-## Automated Testing (Travis CI)
+## Local Validation and Legacy CI
 
-This repository uses [Travis CI](https://travis-ci.org/) to deliver automated testing.
+PR #40 added native local checks without Docker or Azure credentials. Follow the [contributor guide](CONTRIBUTE.md) to install the pinned tools and register hooks safely alongside any shared Git hooks. The merged checks include JSON/YAML/XML parsing, ShellCheck, per-file Bash syntax, check-only shfmt, Ruff, redacted staged-change Gitleaks scanning, and focused runtime contracts at pre-push/manual stage.
 
-The following tests are carried out for every Pull Request and will also run in a Travis CI enabled forked repository:
+The focused offline runtime check can also be run directly:
 
-- **JSON Linting** - All JSON files are linted to ensure they do not contain any syntax errors.
-- **JSON Code Style** - All JSON files are tested to ensure they comply with project code style rules.
+```bash
+bash etc/checkRuntimeContracts.sh
+```
 
-The following tests are carried out as part of the Pull Request merging prior to a contribution being accepted into the release branch:
+Existing full-repository ShellCheck/formatting debt remains visible; these merges do not make every file lint-clean. Staged secret scanning does not certify all history or uncommitted files. Offline checks do not prove ARM provider acceptance, a working Moodle site, migration safety or restore readiness.
 
-- **Template Validation** - The template is submitted to Azure to ensure it is correctly formatted and contains valid logic.
-- **Template Build** - The template is submitted to Azure and the stack described in the template is built to ensure a stack is correctly deployed.
+### Legacy Travis CI
+
+The repository retains [Travis CI](https://travis-ci.org/) configuration and Grunt/JSHint checks for selected JSON file groups. This is not complete JSON-entrypoint or ARM semantic coverage. Travis/runtime modernization and ownership-safe deployment testing remain open work; the setup below is historical reference, not a certification of the current runtime.
+
+Live template validation/build tests contact Azure and can create billable resources. They require explicit approval, identity/subscription review and verified resource ownership/cleanup; do not enable them merely to lint a change.
 
 ### Setting Up Travis CI for Template Build
 

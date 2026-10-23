@@ -1,5 +1,5 @@
 {
-    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
         "moodleCommon": {
@@ -24,14 +24,15 @@
     "resources": [
         {
             "type": "Microsoft.Network/ddosProtectionPlans",
-            "apiVersion": "2018-02-01",
+            "apiVersion": "2026-03-01",
             "condition": "[parameters('moodleCommon').ddosSwitch]",
             "location": "[parameters('moodleCommon').location]",
-            "name": "[parameters('moodleCommon').ddosPlanName]"
+            "name": "[parameters('moodleCommon').ddosPlanName]",
+            "properties": {}
         },
         {
             "type": "Microsoft.Network/virtualNetworks",
-            "apiVersion": "2018-02-01",
+            "apiVersion": "2026-03-01",
             "dependsOn": [
                 "[resourceId('Microsoft.Network/ddosProtectionPlans', parameters('moodleCommon').ddosPlanName)]"
             ],

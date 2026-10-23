@@ -13,7 +13,7 @@
         {
             "condition": "[not(equals(parameters('moodleCommon').fileServerType, 'azurefiles'))]",
             "type": "Microsoft.Storage/storageAccounts",
-            "apiVersion": "2019-06-01",
+            "apiVersion": "2026-09-01",
             "location": "[parameters('moodleCommon').location]",
             "name": "[concat(parameters('moodleCommon').storageAccountName,'naf')]",
             "kind": "StorageV2",
@@ -44,7 +44,7 @@
         {
             "condition": "[equals(parameters('moodleCommon').fileServerType, 'azurefiles')]",
             "type": "Microsoft.Storage/storageAccounts",
-            "apiVersion": "2019-06-01",
+            "apiVersion": "2026-09-01",
             "location": "[parameters('moodleCommon').location]",
             "name": "[concat(parameters('moodleCommon').storageAccountName,'af')]",
             "kind": "[if(equals(parameters('moodleCommon').storageAccountType, 'Premium_LRS'), 'FileStorage', 'StorageV2')]",
@@ -85,7 +85,7 @@
     },
     "outputs": {
         "storageAccountKey": {
-            "value": "[listKeys(variables('storageAccountId'), '2019-06-01').keys[0].value]",
+            "value": "[listKeys(variables('storageAccountId'), '2026-09-01').keys[0].value]",
             "type": "string"
         },
         "storageAccountName": {

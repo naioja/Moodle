@@ -47,3 +47,17 @@ repos:
         pass_filenames: false
         always_run: true
         stages: [pre-push, manual]
+      - id: arm-contracts
+        name: ARM contracts and cached resource schemas
+        entry: bash etc/checkArmTemplates.sh Schemas
+        language: unsupported
+        pass_filenames: false
+        always_run: true
+        stages: [pre-push, manual]
+      - id: arm-best-practices
+        name: ARM-TTK and PSRule strict audit
+        entry: bash etc/checkArmTemplates.sh All
+        language: unsupported
+        pass_filenames: false
+        always_run: true
+        stages: [manual]

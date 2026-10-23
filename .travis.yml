@@ -1,26 +1,33 @@
-dist: trusty
-
+---
+dist: noble
+os: linux
 language: python
-
-node_js: "0.12"
-
-python: "3.5"
+python: '3.14'
 
 cache:
-  - directories: node_modules
-  - pip
+  directories:
+    - .cache/uv
+    - .cache/ci-python
+    - .cache/pre-commit
+    - .cache/arm-tools
+    - $HOME/.npm
 
 env:
-  - PYTHONUNBUFFERED=TRUE
+  global:
+    - PYTHONUNBUFFERED=1
+    - PRE_COMMIT_HOME=$TRAVIS_BUILD_DIR/.cache/pre-commit
+    - UV_CACHE_DIR=$TRAVIS_BUILD_DIR/.cache/uv
+    - UV_PYTHON_INSTALL_DIR=$TRAVIS_BUILD_DIR/.cache/ci-python
 
 install:
-  - npm install # Install task runners for lint checking.
-  - pip install azure-mgmt-subscription azure-mgmt-resource keyring pycurl # Install Azure Python SDK (we only need the sub & the resource manager packages)
-
-before_script:
-  - ssh-keygen -q -f azure_moodle_id_rsa -N "" # Generate SSH keys to send to deployment
+  - python -m pip install 'uv==0.13.5'
+  - uv python install --no-bin 3.15.1
+  - uv venv --python 3.15.1 .cache/ci-validation
+  - uv pip install --python .cache/ci-validation/bin/python 'pre-commit==4.7.0'
+  - nvm install 24.22.1
+  - npm ci --ignore-scripts --no-fund --no-audit
+  - bash etc/installArmTools.sh
 
 script:
-  - npm test
-  - ./etc/travis.py
+  - .cache/ci-validation/bin/python -W default etc/travis.py
 

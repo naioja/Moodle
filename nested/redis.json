@@ -1,5 +1,5 @@
 {
-    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json",
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
         "moodleCommon": {
@@ -18,7 +18,7 @@
     "resources": [
         {
             "type": "Microsoft.Cache/Redis",
-            "apiVersion": "2016-04-01",
+            "apiVersion": "2024-11-01",
             "location": "[parameters('moodleCommon').location]",
             "name": "[parameters('moodleCommon').redisCacheName]",
             "properties": {
@@ -39,7 +39,7 @@
     },
     "outputs": {
         "redisKey": {
-            "value": "[listKeys(variables('redisResourceId'), '2016-04-01').primaryKey]",
+            "value": "[listKeys(variables('redisResourceId'), '2024-11-01').primaryKey]",
             "type": "string"
         }
     }

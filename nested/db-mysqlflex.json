@@ -1,5 +1,5 @@
 {
-    "$schema": "http://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
       "moodleCommon": {
@@ -73,7 +73,7 @@
       },
       {
         "type": "Microsoft.DBforMySQL/flexibleServers/configurations",
-        "apiVersion": "2021-05-01",
+        "apiVersion": "2024-12-30",
         "name": "[concat(parameters('moodleCommon').serverName, '/require_secure_transport')]",
         "dependsOn": [
             "[concat('Microsoft.DBforMySQL/flexibleServers/', parameters('moodleCommon').serverName)]"
@@ -86,7 +86,7 @@
       {
         "condition": "[not(parameters('moodleCommon').vnetDbDeploySwitch)]",
         "type": "Microsoft.DBforMySQL/flexibleServers/firewallRules",
-        "apiVersion": "2021-05-01",
+        "apiVersion": "2024-12-30",
         "name": "[concat(parameters('moodleCommon').serverName, '/mysqlflex-firewall-allow-lb')]",
         "dependsOn": [
             "[concat('Microsoft.DBforMySQL/flexibleservers/', parameters('moodleCommon').serverName)]"
@@ -100,7 +100,7 @@
       {
         "condition": "[not(parameters('moodleCommon').vnetDbDeploySwitch)]",
         "type": "Microsoft.DBforMySQL/flexibleServers/firewallRules",
-        "apiVersion": "2021-05-01",
+        "apiVersion": "2024-12-30",
         "name": "[concat(parameters('moodleCommon').serverName, '/mysqlflex-firewall-allow-lb-out001')]",
         "dependsOn": [
             "[concat('Microsoft.DBforMySQL/flexibleservers/', parameters('moodleCommon').serverName)]"
@@ -114,7 +114,7 @@
       {
         "condition": "[not(parameters('moodleCommon').vnetDbDeploySwitch)]",
         "type": "Microsoft.DBforMySQL/flexibleServers/firewallRules",
-        "apiVersion": "2021-05-01",
+        "apiVersion": "2024-12-30",
         "name": "[concat(parameters('moodleCommon').serverName, '/mysqlflex-firewall-allow-lb-out002')]",
         "dependsOn": [
             "[concat('Microsoft.DBforMySQL/flexibleservers/', parameters('moodleCommon').serverName)]"
@@ -128,7 +128,7 @@
       {
         "condition": "[not(parameters('moodleCommon').vnetDbDeploySwitch)]",
         "type": "Microsoft.DBforMySQL/flexibleServers/firewallRules",
-        "apiVersion": "2021-05-01",
+        "apiVersion": "2024-12-30",
         "name": "[concat(parameters('moodleCommon').serverName, '/mysqlflex-firewall-allow-ctlr')]",
         "dependsOn": [
             "[concat('Microsoft.DBforMySQL/flexibleservers/', parameters('moodleCommon').serverName)]"

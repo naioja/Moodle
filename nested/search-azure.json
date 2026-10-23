@@ -1,5 +1,5 @@
 {
-    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
         "moodleCommon": {
@@ -18,7 +18,7 @@
     "resources": [
         {
             "type": "Microsoft.Search/searchServices",
-            "apiVersion": "2015-08-19",
+            "apiVersion": "2025-05-01",
             "location": "[parameters('moodleCommon').location]",
             "name": "[parameters('moodleCommon').azureSearchName]",
             "sku": {
@@ -43,7 +43,7 @@
     },
     "outputs": {
         "azureSearchKey": {
-            "value": "[listAdminKeys(variables('azureSearchServiceId'), '2015-08-19').PrimaryKey]",
+            "value": "[listAdminKeys(variables('azureSearchServiceId'), '2025-05-01').PrimaryKey]",
             "type": "string"
         }
     }
