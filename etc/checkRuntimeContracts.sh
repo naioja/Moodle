@@ -20,7 +20,7 @@ assert_json azuredeploy.json '
     .ubuntuVersion.defaultValue == "24_04-lts-gen2" and
     .controllerVmSku.defaultValue == "Standard_D4ds_v5" and
     .autoscaleVmSku.defaultValue == "Standard_D2ds_v5" and
-    .fileServerVmSku.defaultValue == "Standard_D2ds_v5" and
+    .fileServerVmSku.defaultValue == "Standard_D4ds_v5" and
     .elasticVmSku.defaultValue == "Standard_D2ds_v5" and
     .tikaVmSku.defaultValue == "Standard_D2ds_v5" and
     .enableAccelNwForCtlrVmSwitch.defaultValue == true and
@@ -55,7 +55,7 @@ assert_json managedApplication/parameters-template.json '
 
 for template_path in nested/nfs-ha.json nested/nfs-ha-vm.json; do
     assert_json "$template_path" '
-        .parameters.vmSku.defaultValue == "Standard_D2ds_v5" and
+        .parameters.vmSku.defaultValue == "Standard_D4ds_v5" and
         .parameters.enableAccelNwSwitch.defaultValue == true
     '
 done

@@ -510,7 +510,7 @@ Type: string
 
 Possible Values: null
 
-Default: Standard_D2ds_v5
+Default: Standard_D4ds_v5
 
 
 ### keyVaultResourceId
