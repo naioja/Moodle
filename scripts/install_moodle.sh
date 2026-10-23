@@ -31,8 +31,6 @@ set -ex
     get_setup_params_from_configs_json $moodle_on_azure_configs_json_path || exit 99
 
     echo $moodleVersion                 >> /tmp/vars.txt
-    echo $glusterNode                   >> /tmp/vars.txt
-    echo $glusterVolume                 >> /tmp/vars.txt
     echo $siteFQDN                      >> /tmp/vars.txt
     echo $httpsTermination              >> /tmp/vars.txt
     echo $dbIP                          >> /tmp/vars.txt
@@ -62,7 +60,6 @@ set -ex
     echo $searchType                    >> /tmp/vars.txt
     echo $azureSearchKey                >> /tmp/vars.txt
     echo $azureSearchNameHost           >> /tmp/vars.txt
-    echo $tikaVmIP                      >> /tmp/vars.txt
     echo $nfsByoIpExportPath            >> /tmp/vars.txt
     echo $storageAccountType            >>/tmp/vars.txt
     echo $fileServerDiskSize            >>/tmp/vars.txt
@@ -100,10 +97,7 @@ set -ex
     # create gluster, nfs or Azure Files mount point
     mkdir -p /moodle
 
-    if [ $fileServerType = "gluster" ]; then
-        # configure gluster repository & install gluster clientapt 
-        add-apt-repository ppa:gluster/glusterfs-9 --yes >> /tmp/apt.log
-    elif [ $fileServerType = "nfs" ]; then
+    if [ "$fileServerType" = "nfs" ]; then
         # configure NFS server and export
         setup_raid_disk_and_filesystem /moodle /dev/md1 /dev/md1p1
         configure_nfs_server_and_export /moodle
@@ -112,9 +106,7 @@ set -ex
     apt_update_noninteractive >> /tmp/apt.log
     apt_install_noninteractive rsyslog git >> /tmp/apt.log
 
-    if [ $fileServerType = "gluster" ]; then
-        apt_install_noninteractive glusterfs-client >> /tmp/apt.log
-    elif [ "$fileServerType" = "azurefiles" ]; then
+    if [ "$fileServerType" = "azurefiles" ]; then
         apt_install_noninteractive \
             linux-modules-extra-azure \
             cifs-utils >> /tmp/apt.log
@@ -126,7 +118,7 @@ set -ex
     if [ $dbServerType = "mysql" ]; then
         apt_install_noninteractive mysql-client >> /tmp/apt.log
     elif [ "$dbServerType" = "postgres" ]; then
-        apt_install_noninteractive postgresql-client >> /tmp/apt.log
+        install_postgresql_client >> /tmp/apt.log
     fi
 
     if [ "$installObjectFsSwitch" = "true" -o "$fileServerType" = "azurefiles" ]; then
@@ -180,11 +172,7 @@ set -ex
         fi
     fi
 
-    if [ $fileServerType = "gluster" ]; then
-        # mount gluster files system
-        echo -e '\n\rInstalling GlusterFS on '$glusterNode':/'$glusterVolume '/moodle\n\r' 
-        setup_and_mount_gluster_moodle_share $glusterNode $glusterVolume
-    elif [ $fileServerType = "nfs-ha" ]; then
+    if [ "$fileServerType" = "nfs-ha" ]; then
         # mount NFS-HA export
         echo -e '\n\rMounting NFS export from '$nfsHaLbIP' on /moodle\n\r'
         configure_nfs_client_and_mount $nfsHaLbIP $nfsHaExportPath /moodle
@@ -923,11 +911,7 @@ EOF
 
     if [ "$searchType" = "elastic" ]; then
         # Set up elasticsearch plugin
-        if [ "$tikaVmIP" = "none" ]; then
-           sed -i "23 a \$CFG->forced_plugin_settings = ['search_elastic' => ['hostname' => 'http://$elasticVm1IP']];" /moodle/html/moodle/config.php
-        else
-           sed -i "23 a \$CFG->forced_plugin_settings = ['search_elastic' => ['hostname' => 'http://$elasticVm1IP', 'fileindexing' => 'true', 'tikahostname' => 'http://$tikaVmIP', 'tikaport' => '9998'],];" /moodle/html/moodle/config.php
-        fi
+          sed -i "23 a \$CFG->forced_plugin_settings = ['search_elastic' => ['hostname' => 'http://$elasticVm1IP', 'fileindexing' => false]];" /moodle/html/moodle/config.php
 
         sed -i "23 a \$CFG->searchengine = 'elastic';" /moodle/html/moodle/config.php
         sed -i "23 a \$CFG->enableglobalsearch = 'true';" /moodle/html/moodle/config.php
@@ -936,11 +920,7 @@ EOF
 
     elif [ "$searchType" = "azure" ]; then
         # Set up Azure Search service plugin
-        if [ "$tikaVmIP" = "none" ]; then
-           sed -i "23 a \$CFG->forced_plugin_settings = ['search_azure' => ['searchurl' => 'https://$azureSearchNameHost', 'apikey' => '$azureSearchKey']];" /moodle/html/moodle/config.php
-        else
-           sed -i "23 a \$CFG->forced_plugin_settings = ['search_azure' => ['searchurl' => 'https://$azureSearchNameHost', 'apikey' => '$azureSearchKey', 'fileindexing' => '1', 'tikahostname' => 'http://$tikaVmIP', 'tikaport' => '9998'],];" /moodle/html/moodle/config.php
-        fi
+          sed -i "23 a \$CFG->forced_plugin_settings = ['search_azure' => ['searchurl' => 'https://$azureSearchNameHost', 'apikey' => '$azureSearchKey', 'fileindexing' => false]];" /moodle/html/moodle/config.php
 
         sed -i "23 a \$CFG->searchengine = 'azure';" /moodle/html/moodle/config.php
         sed -i "23 a \$CFG->enableglobalsearch = 'true';" /moodle/html/moodle/config.php
@@ -953,14 +933,6 @@ EOF
         # Set the ObjectFS alternate filesystem
         sed -i "23 a \$CFG->alternative_file_system_class = '\\\tool_objectfs\\\azure_file_system';" /moodle/html/moodle/config.php
     fi
-
-   if [ "$dbServerType" = "postgres" ]; then
-     # Get a new version of Postgres to match Azure version
-     add-apt-repository "deb http://apt.postgresql.org/pub/repos/apt/ xenial-pgdg main"
-     wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo DEBIAN_FRONTEND=noninteractive NEEDRESTART_MODE='a' apt -key add -
-     apt-get update
-     apt-get install -y postgresql-client-9.6
-   fi
 
    # create cron entry
    # It is scheduled for once per minute. It can be changed as needed.
