@@ -28,7 +28,6 @@
         "loadBalancerSku": {
             "defaultValue": "Standard",
             "allowedValues": [
-                "Basic",
                 "Standard"
             ],
             "metadata": {

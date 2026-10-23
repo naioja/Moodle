@@ -400,6 +400,17 @@
                 "description": "PostgreSQL Flexible Server Premium SSD storage size in GiB."
             }
         },
+        "sslEnforcement": {
+            "allowedValues": [
+                "Disabled",
+                "Enabled"
+            ],
+            "defaultValue": "Disabled",
+            "metadata": {
+                "description": "MySql/Postgresql SSL connection"
+            },
+            "type": "string"
+        },
         "mssqlDbServiceObjectiveName": {
             "allowedValues": [
                 "S1",
