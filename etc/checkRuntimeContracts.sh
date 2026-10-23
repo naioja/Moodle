@@ -44,6 +44,7 @@ assert_json migration/azuredeploy-migration.json '
     .parameters.moodleVersion.defaultValue == "MOODLE_503_STABLE" and
     .parameters.moodleVersion.allowedValues == ["MOODLE_503_STABLE"] and
     .parameters.autoscaleVmSku.defaultValue == "Standard_D2ds_v5" and
+    .parameters.loadBalancerSku.allowedValues == ["Standard"] and
     .resources[0].properties.parameters.controllerVmSku.value == "Standard_D4ds_v5" and
     .resources[0].properties.parameters.enableAccelNwForOtherVmsSwitch.value == true
 '
@@ -63,6 +64,7 @@ assert_json azuredeploy.json "
     .parameters.dbServerType.defaultValue == \"mysqlflex\" and
     .parameters.mysqlflexVersion.defaultValue == \"8.4\" and
     .parameters.mysqlflexVersion.allowedValues == [\"8.4\"] and
+    .parameters.sslEnforcement.allowedValues == [\"Disabled\", \"Enabled\"] and
     .variables.moodleCommon.mysqlflexVersion == \"[parameters('mysqlflexVersion')]\" and
     (.parameters.dbServerType.allowedValues | index(\"mysql\") == null) and
     (.parameters.fileServerType.allowedValues | index(\"gluster\") == null) and
@@ -102,6 +104,18 @@ assert_json nested/db-postgres.json '
     .resources[0].type == "Microsoft.DBforPostgreSQL/flexibleServers" and
     .resources[0].apiVersion == "2025-08-01" and
     .resources[0].properties.backup.backupRetentionDays == 35
+'
+grep -Fq 'CREATE DATABASE ${moodledbname} OWNER ${moodledbuser};' "$repository_root/scripts/install_moodle.sh"
+if grep -Fq 'mysqlPgresVcores' "$repository_root/loadtest/loadtest.sh"; then
+    printf 'FAIL: load test still passes retired shared database sizing parameters\n' >&2
+    false
+fi
+grep -Fq 'mysqlflexSkuName=$db_sku mysqlflexStgSizeGiB=$db_size_gb' "$repository_root/loadtest/loadtest.sh"
+grep -Fq 'postgresSkuName=$db_sku postgresStorageSizeGiB=$db_size_gb' "$repository_root/loadtest/loadtest.sh"
+assert_json nested/network-subnets.json '
+    any(.resources[]; .type == "Microsoft.Network/natGateways") and
+    any(.resources[]; .type == "Microsoft.Network/publicIPAddresses" and .sku.name == "Standard") and
+    any(.resources[]; .type == "Microsoft.Network/virtualNetworks/subnets" and (.name | contains("subnetSan")) and (.properties | contains("natGateway")))
 '
 for retired_path in nested/db-mysql.json nested/tika.json nested/tikaconfig.json nested/gluster.json nested/glustervm.json nested/glustervmsetup.json scripts/install_tika.sh scripts/install_gluster.sh; do
     [[ ! -e "$repository_root/$retired_path" ]]

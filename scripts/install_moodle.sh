@@ -787,9 +787,8 @@ EOF
         # Create postgres db
         echo "${postgresIP}:5432:postgres:${pgadminlogin}:${pgadminpass}" > /root/.pgpass
         chmod 600 /root/.pgpass
-        psql -h $postgresIP -U $pgadminlogin -c "CREATE DATABASE ${moodledbname};" postgres
         psql -h $postgresIP -U $pgadminlogin -c "CREATE USER ${moodledbuser} WITH PASSWORD '${moodledbpass}';" postgres
-        psql -h $postgresIP -U $pgadminlogin -c "GRANT ALL ON DATABASE ${moodledbname} TO ${moodledbuser};" postgres
+        psql -h $postgresIP -U $pgadminlogin -c "CREATE DATABASE ${moodledbname} OWNER ${moodledbuser};" postgres
         rm -f /root/.pgpass
     fi
 

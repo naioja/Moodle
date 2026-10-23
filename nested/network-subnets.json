@@ -17,6 +17,40 @@
     },
     "resources": [
         {
+            "condition": "[and(equals(parameters('moodleCommon').customVnetId, ''), equals(parameters('moodleCommon').fileServerType, 'nfs-ha'))]",
+            "type": "Microsoft.Network/publicIPAddresses",
+            "apiVersion": "2024-05-01",
+            "name": "[variables('nfsHaNatPublicIpName')]",
+            "location": "[parameters('moodleCommon').location]",
+            "sku": {
+                "name": "Standard"
+            },
+            "properties": {
+                "publicIPAllocationMethod": "Static"
+            }
+        },
+        {
+            "condition": "[and(equals(parameters('moodleCommon').customVnetId, ''), equals(parameters('moodleCommon').fileServerType, 'nfs-ha'))]",
+            "type": "Microsoft.Network/natGateways",
+            "apiVersion": "2024-05-01",
+            "name": "[variables('nfsHaNatGatewayName')]",
+            "location": "[parameters('moodleCommon').location]",
+            "sku": {
+                "name": "Standard"
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/publicIPAddresses', variables('nfsHaNatPublicIpName'))]"
+            ],
+            "properties": {
+                "idleTimeoutInMinutes": 4,
+                "publicIpAddresses": [
+                    {
+                        "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('nfsHaNatPublicIpName'))]"
+                    }
+                ]
+            }
+        },
+        {
             "type": "Microsoft.Network/virtualNetworks/subnets",
             "apiVersion": "2017-10-01",
             "name": "[concat(parameters('vnetName'), '/', parameters('moodleCommon').subnetWeb)]",
@@ -27,15 +61,14 @@
         },
         {
             "type": "Microsoft.Network/virtualNetworks/subnets",
-            "apiVersion": "2017-10-01",
+            "apiVersion": "2024-05-01",
             "name": "[concat(parameters('vnetName'), '/', parameters('moodleCommon').subnetSan)]",
             "location": "[parameters('moodleCommon').location]",
             "dependsOn": [
-                "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('vnetName'), parameters('moodleCommon').subnetWeb)]"
+                "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('vnetName'), parameters('moodleCommon').subnetWeb)]",
+                "[resourceId('Microsoft.Network/natGateways', variables('nfsHaNatGatewayName'))]"
             ],
-            "properties": {
-                "addressPrefix": "[parameters('moodleCommon').subnetSanRange]"
-            }
+            "properties": "[if(and(equals(parameters('moodleCommon').customVnetId, ''), equals(parameters('moodleCommon').fileServerType, 'nfs-ha')), createObject('addressPrefix', parameters('moodleCommon').subnetSanRange, 'natGateway', createObject('id', resourceId('Microsoft.Network/natGateways', variables('nfsHaNatGatewayName')))), createObject('addressPrefix', parameters('moodleCommon').subnetSanRange))]"
         },
         {
             "type": "Microsoft.Network/virtualNetworks/subnets",
@@ -111,6 +144,8 @@
     "variables": {
         "documentation01": "This sub-template creates various subnets needed for various components of the cluster.",
         "documentation02": "This needs to be done on a separate nested template, in order to allow to create subnets on a customer's BYO-vnet, which may be on a different subscription and/or on a different resource group.",
-        "documentation03": "The subnets are created one-by-one (using the dependsOn's), to avoid ARM's 'Another operation on this or dependent resource is in progress' failures"
+        "documentation03": "The subnets are created one-by-one (using the dependsOn's), to avoid ARM's 'Another operation on this or dependent resource is in progress' failures",
+        "nfsHaNatGatewayName": "[concat('nfs-ha-nat-', parameters('moodleCommon').resourcesPrefix)]",
+        "nfsHaNatPublicIpName": "[concat('nfs-ha-nat-pip-', parameters('moodleCommon').resourcesPrefix)]"
     }
 }
