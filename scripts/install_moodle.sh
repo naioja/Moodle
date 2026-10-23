@@ -217,7 +217,6 @@ set -ex
         php-bcmath \
         php-ldap \
         php-gd \
-        php-xmlrpc \
         php-intl \
         php-xml \
         php-bz2 \
@@ -253,7 +252,7 @@ cd /moodle/tmp
 
 if [ ! -d /moodle/html/moodle ]; then
     # downloading moodle only if /moodle/html/moodle does not exist -- if it exists, user should populate it in advance correctly as below. This is to reduce template deployment time.
-    /usr/bin/curl -k --max-redirs 10 https://github.com/moodle/moodle/archive/MOODLE_402_STABLE.zip -L -o moodle.zip
+    /usr/bin/curl -k --max-redirs 10 "https://github.com/moodle/moodle/archive/${moodleVersion}.zip" -L -o moodle.zip
     /usr/bin/unzip -q moodle.zip
     /bin/mv "$moodleUnzipDir" /moodle/html/moodle
 fi
@@ -262,18 +261,18 @@ if [ "$installGdprPluginsSwitch" = "true" ]; then
     # install Moodle GDPR plugins (Note: This is only for Moodle versions 3.4.2+ or 3.3.5+ and will be included in Moodle 3.5, so no need for 3.5)
     curl -k --max-redirs 10 https://github.com/moodlehq/moodle-tool_policy/archive/"$moodleStableVersion".zip -L -o plugin-policy.zip
     unzip -q plugin-policy.zip
-    mv moodle-tool_policy-"$moodleStableVersion" /moodle/html/moodle/admin/tool/policy
+    mv moodle-tool_policy-"$moodleStableVersion" /moodle/html/moodle/public/admin/tool/policy
 
     curl -k --max-redirs 10 https://github.com/moodlehq/moodle-tool_dataprivacy/archive/"$moodleStableVersion".zip -L -o plugin-dataprivacy.zip
     unzip -q plugin-dataprivacy.zip
-    mv moodle-tool_dataprivacy-"$moodleStableVersion" /moodle/html/moodle/admin/tool/dataprivacy
+    mv moodle-tool_dataprivacy-"$moodleStableVersion" /moodle/html/moodle/public/admin/tool/dataprivacy
 fi
 
 if [ "$installO365pluginsSwitch" = "true" ]; then
     # install Office 365 plugins
     curl -k --max-redirs 10 https://github.com/Microsoft/o365-moodle/archive/"$o365pluginVersion".zip -L -o o365.zip
     unzip -q o365.zip
-    cp -r o365-moodle-"$o365pluginVersion"/* /moodle/html/moodle
+    cp -r o365-moodle-"$o365pluginVersion"/* /moodle/html/moodle/public/
     rm -rf o365-moodle-"$o365pluginVersion"
 fi
 
@@ -281,30 +280,30 @@ if [ "$searchType" = "elastic" ]; then
     # Install ElasticSearch plugin
     /usr/bin/curl -k --max-redirs 10 https://github.com/catalyst/moodle-search_elastic/archive/master.zip -L -o plugin-elastic.zip
     /usr/bin/unzip -q plugin-elastic.zip
-    /bin/mv moodle-search_elastic-master /moodle/html/moodle/search/engine/elastic
+    /bin/mv moodle-search_elastic-master /moodle/html/moodle/public/search/engine/elastic
 
     # Install ElasticSearch plugin dependency
     /usr/bin/curl -k --max-redirs 10 https://github.com/catalyst/moodle-local_aws/archive/master.zip -L -o local-aws.zip
     /usr/bin/unzip -q local-aws.zip
-    /bin/mv moodle-local_aws-master /moodle/html/moodle/local/aws
+    /bin/mv moodle-local_aws-master /moodle/html/moodle/public/local/aws
 
 elif [ "$searchType" = "azure" ]; then
     # Install Azure Search service plugin
     /usr/bin/curl -k --max-redirs 10 https://github.com/catalyst/moodle-search_azure/archive/master.zip -L -o plugin-azure-search.zip
     /usr/bin/unzip -q plugin-azure-search.zip
-    /bin/mv moodle-search_azure-master /moodle/html/moodle/search/engine/azure
+    /bin/mv moodle-search_azure-master /moodle/html/moodle/public/search/engine/azure
 fi
 
 if [ "$installObjectFsSwitch" = "true" ]; then
     # Install the ObjectFS plugin
     /usr/bin/curl -k --max-redirs 10 https://github.com/catalyst/moodle-tool_objectfs/archive/master.zip -L -o plugin-objectfs.zip
     /usr/bin/unzip -q plugin-objectfs.zip
-    /bin/mv moodle-tool_objectfs-master /moodle/html/moodle/admin/tool/objectfs
+    /bin/mv moodle-tool_objectfs-master /moodle/html/moodle/public/admin/tool/objectfs
 
     # Install the ObjectFS Azure library
     /usr/bin/curl -k --max-redirs 10 https://github.com/catalyst/moodle-local_azure_storage/archive/master.zip -L -o plugin-azurelibrary.zip
     /usr/bin/unzip -q plugin-azurelibrary.zip
-    /bin/mv moodle-local_azure_storage-master /moodle/html/moodle/local/azure_storage
+    /bin/mv moodle-local_azure_storage-master /moodle/html/moodle/public/local/azure_storage
 fi
 cd /moodle
 rm -rf /moodle/tmp
@@ -386,7 +385,7 @@ EOF
 server {
         listen 81 default;
         server_name ${siteFQDN};
-        root /moodle/html/moodle;
+        root /moodle/html/moodle/public;
         index index.php index.html index.htm;
 
         # Log to syslog
@@ -407,7 +406,6 @@ EOF
         if (\$http_x_forwarded_proto != https) {
                 return 301 https://\$server_name\$request_uri;
         }
-        rewrite ^/(.*\.php)(/)(.*)$ /\$1?file=/\$3 last;
 EOF
     fi
 
@@ -418,18 +416,19 @@ EOF
         }
 
     location / {
-        try_files \$uri \$uri/index.php?\$query_string;
+        try_files \$uri \$uri/ /r.php\$is_args\$args;
     }
  
     location ~ [^/]\.php(/|$) {
         fastcgi_split_path_info ^(.+?\.php)(/.*)$;
         if (!-f \$document_root\$fastcgi_script_name) {
-                return 404;
+            rewrite ^ /r.php last;
         }
 
         fastcgi_buffers 16 16k;
         fastcgi_buffer_size 32k;
         fastcgi_param   SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
+        fastcgi_param PATH_INFO \$fastcgi_path_info;
         fastcgi_pass unix:/run/php/php${PhpVer}-fpm.sock;
         fastcgi_read_timeout 3600;
         fastcgi_index index.php;
@@ -441,7 +440,7 @@ EOF
         cat <<EOF >> /etc/nginx/sites-enabled/${siteFQDN}.conf
 server {
         listen 443 ssl;
-        root /moodle/html/moodle;
+        root /moodle/html/moodle/public;
         index index.php index.html index.htm;
 
         ssl on;
@@ -933,7 +932,7 @@ EOF
         sed -i "23 a \$CFG->searchengine = 'elastic';" /moodle/html/moodle/config.php
         sed -i "23 a \$CFG->enableglobalsearch = 'true';" /moodle/html/moodle/config.php
         # create index
-        php /moodle/html/moodle/search/cli/indexer.php --force --reindex || true
+        php /moodle/html/moodle/public/search/cli/indexer.php --force --reindex || true
 
     elif [ "$searchType" = "azure" ]; then
         # Set up Azure Search service plugin
@@ -946,7 +945,7 @@ EOF
         sed -i "23 a \$CFG->searchengine = 'azure';" /moodle/html/moodle/config.php
         sed -i "23 a \$CFG->enableglobalsearch = 'true';" /moodle/html/moodle/config.php
         # create index
-        php /moodle/html/moodle/search/cli/indexer.php --force --reindex || true
+        php /moodle/html/moodle/public/search/cli/indexer.php --force --reindex || true
 
     fi
 

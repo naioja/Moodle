@@ -38,10 +38,9 @@
         },
         "moodleVersion": {
             "allowedValues": [
-                "MOODLE_39_STABLE",
-                "MOODLE_38_STABLE"
+                "MOODLE_503_STABLE"
             ],
-            "defaultValue": "MOODLE_38_STABLE",
+            "defaultValue": "MOODLE_503_STABLE",
             "metadata": {
                 "description": "The Moodle version you want to install."
             },
@@ -65,7 +64,7 @@
             "type": "string"
         },
         "autoscaleVmSku": {	
-            "defaultValue": "Standard_DS2_v2",	
+            "defaultValue": "Standard_D2ds_v5",
             "metadata": {	
                 "description": "VM size for autoscaled web VMs"	
             },	
@@ -80,24 +79,23 @@
         },
         "phpVersion": {
             "allowedValues": [
-                "7.2",
-                "7.3",
-                "7.4"
+                "8.3"
             ],
-            "defaultValue": "7.4",
+            "defaultValue": "8.3",
             "metadata": {
                 "description": "php version"
             },
             "type": "string"
         },
         "dbServerType": {
-            "defaultValue": "mysql",
+            "defaultValue": "mysqlflex",
             "allowedValues": [
                 "postgres",
-                "mysql"
+                "mysql",
+                "mysqlflex"
             ],
             "metadata": {
-                "description": "Database type"
+                "description": "Database type. The Moodle 5.3 default uses MySQL Flexible Server; legacy Single Server routes are not certified."
             },
             "type": "string"
         },
@@ -162,12 +160,21 @@
         },
         "mysqlVersion": {
             "allowedValues": [
-                "5.6",
-                "5.7"
+                "8.0.21"
             ],
-            "defaultValue": "5.7",
+            "defaultValue": "8.0.21",
             "metadata": {
-                "description": "Mysql version"
+                "description": "Legacy MySQL Single Server version; not used for mysqlflex."
+            },
+            "type": "string"
+        },
+        "mysqlflexVersion": {
+            "allowedValues": [
+                "8.4"
+            ],
+            "defaultValue": "8.4",
+            "metadata": {
+                "description": "MySQL Flexible Server version for Moodle 5.3. Existing databases require a separately planned and backed-up migration."
             },
             "type": "string"
         },
@@ -188,9 +195,9 @@
         "ubuntuVersion": {
             "type": "string",
             "allowedValues": [
-                "18.04-LTS"
+                "24_04-lts-gen2"
             ],
-            "defaultValue": "18.04-LTS"
+            "defaultValue": "24_04-lts-gen2"
         }
     },
     "variables": {
@@ -221,7 +228,7 @@
                     "siteURL":                      { "value": ""},
                     "moodleVersion":                { "value": "[parameters('moodleVersion')]"},
                     "sshPublicKey":                 { "value": "[parameters('sshPublicKey')]" },
-                    "controllerVmSku":              { "value": "Standard_DS1_v2"},
+                    "controllerVmSku":              { "value": "Standard_D4ds_v5"},
                     "webServerType":                { "value": "[parameters('webServerType')]"},
                     "autoscaleVmSku":               { "value": "[parameters('autoscaleVmSku')]" },
                     "autoscaleVmCountMax":          { "value": "[int(parameters('autoscaleVmCountMax'))]" },
@@ -235,6 +242,7 @@
                     "mysqlPgresSkuTier":            { "value": "[parameters('mysqlPgresSkuTier')]" },
                     "mysqlPgresSkuHwFamily":        { "value": "[parameters('mysqlPgresSkuHwFamily')]" },
                     "mysqlVersion":                 { "value": "[parameters('mysqlVersion')]" },
+                    "mysqlflexVersion":             { "value": "[parameters('mysqlflexVersion')]" },
                     "postgresVersion":              { "value": "9.6" },
                     "fileServerType":               { "value": "azurefiles" },
                     "storageAccountType":           { "value": "Premium_LRS" },
@@ -244,7 +252,7 @@
                     "vNetAddressSpace":             { "value": "[parameters('vNetAddressSpace')]"},
                     "ubuntuVersion":                { "value": "[parameters('ubuntuVersion')]"},
                     "location":                     { "value": "[variables('location')]" },
-                    "enableAccelNwForOtherVmsSwitch":   { "value" : false },
+                    "enableAccelNwForOtherVmsSwitch":   { "value" : true },
                     "isMigration":                  { "value": true }
                 },
                 "templateLink": {

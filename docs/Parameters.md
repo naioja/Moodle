@@ -146,18 +146,18 @@ Default: false
 
 ### enableAccelNwForCtlrVmSwitch
 
-Switch to enable Azure Accelerated Networking on the controller VM. Default to false because currently the default controller VM SKU (D1) doesn't support AN. Change this to true if you set the controller VM SKU to eligibible ones (e.g., D2) for better performance.
+Switch to enable Azure Accelerated Networking on the controller VM. Required by the default Ddsv5 VM size; keep enabled unless selecting a different compatible VM family.
 
 Type: bool
 
 Possible Values: null
 
-Default: false
+Default: true
 
 
 ### enableAccelNwForOtherVmsSwitch
 
-Switch to enable Azure Accelerated Networking on all other VMs. Default to true because currently the default controller VM SKU for all other VMS (D2) does support AN. Change this to false if you set the SKU of any other VMs to an ineligibible one (e.g., D1) to avoid deployment failure.
+Switch to enable Azure Accelerated Networking on all other VMs. Required by the default Ddsv5 VM sizes; keep enabled unless selecting a different compatible VM family.
 
 Type: bool
 
@@ -194,9 +194,22 @@ The Moodle version you want to install.
 
 Type: string
 
-Possible Values: ["MOODLE_35_STABLE","MOODLE_34_STABLE","v3.4.3","v3.4.2","v3.4.1","MOODLE_33_STABLE","MOODLE_32_STABLE","MOODLE_31_STABLE","MOODLE_30_STABLE","MOODLE_29_STABLE"]
+Possible Values: ["MOODLE_503_STABLE"]
 
-Default: MOODLE_35_STABLE
+Default: MOODLE_503_STABLE
+
+Moodle 5.3 serves web content and plugins from `public` below the code root. Shared code uses `/moodle/html/moodle/public`; frontend local copies use `/var/www/html/moodle/public`. Keep `config.php` and the retained `admin/cli/install.php` and `admin/cli/cron.php` entrypoints at the code root. The search indexer is under `public/search/cli/indexer.php`. Correct paths do not establish optional plugin version compatibility.
+
+
+### phpVersion
+
+PHP version to install. Moodle 5.3 requires PHP 8.3.
+
+Type: string
+
+Possible Values: ["8.3"]
+
+Default: 8.3
 
 
 ### sshPublicKey
@@ -229,7 +242,9 @@ Type: string
 
 Possible Values: null
 
-Default: Standard_DS1_v2
+Default: Standard_D4ds_v5
+
+The default supports the controller's maximum of eight data disks. Ddsv5 sizes support the selected x64 Gen2 image, Premium storage and local temporary storage, and require accelerated networking. These defaults can cost more than the previous DSv2 sizes; verify regional availability, quota and pricing before deployment. Existing Gen1 VMs need a planned replacement/migration, not an in-place image-generation change.
 
 
 ### webServerType
@@ -251,7 +266,7 @@ Type: string
 
 Possible Values: null
 
-Default: Standard_DS2_v2
+Default: Standard_D2ds_v5
 
 
 ### autoscaleVmCountMax
@@ -293,9 +308,9 @@ Database type
 
 Type: string
 
-Possible Values: ["postgres","mysql","mssql"]
+Possible Values: ["postgres","mysql","mssql","mysqlflex"]
 
-Default: mysql
+Default: mysqlflex
 
 
 ### dbLogin
@@ -353,15 +368,28 @@ Possible Values: ["Gen4","Gen5"]
 Default: Gen5
 
 
-### mysqlVersion
+### mysqlflexVersion
 
-Mysql version
+MySQL Flexible Server version for new Moodle 5.3 deployments. Moodle 5.3 requires MySQL 8.4. The separate `mysqlVersion` parameter is retained for the retired Single Server route and does not select the Flexible Server engine.
 
 Type: string
 
-Possible Values: ["5.6","5.7"]
+Possible Values: ["8.4"]
 
-Default: 5.7
+Default: 8.4
+
+The [2025-06-01-preview control-plane API](https://learn.microsoft.com/en-us/azure/templates/microsoft.dbformysql/2025-06-01-preview/flexibleservers) documents the `8.4` engine value; the published stable `2024-12-30` schema does not. This is a preview management API for a GA engine, not a claim of completed regional/provider/runtime validation. Check availability before deployment. Do not apply these new defaults as an unattended in-place upgrade: take consistent DB, Moodle data, code/plugin and configuration backups, rehearse restore and any required intermediate Moodle upgrades, and plan cutover/rollback without relying on a database downgrade.
+
+
+### mysqlVersion
+
+Legacy MySQL Single Server version. Not used for `mysqlflex`; the retired Single Server route is not certified for Moodle 5.3.
+
+Type: string
+
+Possible Values: ["8.0.21"]
+
+Default: 8.0.21
 
 
 ### postgresVersion
@@ -482,7 +510,7 @@ Type: string
 
 Possible Values: null
 
-Default: Standard_DS2_v2
+Default: Standard_D4ds_v5
 
 
 ### keyVaultResourceId
@@ -680,7 +708,7 @@ Type: string
 
 Possible Values: null
 
-Default: Standard_DS2_v2
+Default: Standard_D2ds_v5
 
 
 ### tikaVmSku
@@ -691,7 +719,7 @@ Type: string
 
 Possible Values: null
 
-Default: Standard_DS2_v2
+Default: Standard_D2ds_v5
 
 
 ### customVnetId
@@ -758,5 +786,4 @@ Type: string
 Possible Values: null
 
 Default: [resourceGroup().location]
-
 
