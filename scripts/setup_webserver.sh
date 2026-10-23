@@ -278,13 +278,12 @@ EOF
   # Set up html dir local copy if specified
   htmlRootDir="/moodle/html/moodle"
   if [ "$htmlLocalCopySwitch" = "true" ]; then
+    htmlRootDir="/var/www/html/moodle"
     if [ "$fileServerType" = "azurefiles" ]; then
       mkdir -p /var/www/html
       ACCOUNT_KEY="$storageAccountKey"
       NAME="$storageAccountName"
       END=$(date -u -d "60 minutes" '+%Y-%m-%dT%H:%M:00Z')
-      htmlRootDir="/var/www/html/moodle"
-
       sas=$(az storage share generate-sas \
         -n moodle \
         --account-key $ACCOUNT_KEY \
@@ -307,6 +306,7 @@ EOF
       setup_html_local_copy_cron_job
     fi
   fi
+  htmlRootDir="${htmlRootDir}/public"
 
   if [ "$httpsTermination" = "VMSS" ]; then
     # Configure nginx/https
@@ -380,7 +380,6 @@ EOF
         if (\$http_x_forwarded_proto != https) {
                 return 301 https://\$server_name\$request_uri;
         }
-        rewrite ^/(.*\.php)(/)(.*)$ /\$1?file=/\$3 last;
 EOF
     fi
     cat <<EOF >> /etc/nginx/sites-enabled/${siteFQDN}.conf
@@ -390,13 +389,13 @@ EOF
         }
 
   location / {
-    try_files \$uri \$uri/index.php?\$query_string;
+    try_files \$uri \$uri/ /r.php\$is_args\$args;
   }
  
         location ~ [^/]\.php(/|$) {
           fastcgi_split_path_info ^(.+?\.php)(/.*)$;
           if (!-f \$document_root\$fastcgi_script_name) {
-                  return 404;
+              rewrite ^ /r.php last;
           }
  
           fastcgi_buffers 16 16k;
@@ -431,9 +430,11 @@ EOF
   DocumentRoot ${htmlRootDir}
 
   <Directory ${htmlRootDir}>
-    Options FollowSymLinks
+    Options -Indexes +FollowSymLinks
     AllowOverride All
     Require all granted
+    AcceptPathInfo On
+    FallbackResource /r.php
   </Directory>
 EOF
     if [ "$httpsTermination" != "None" ]; then
