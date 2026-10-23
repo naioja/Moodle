@@ -73,6 +73,44 @@ they do not then they will be rejected.
 It is also required that contributions which add features also bring
 at least basic testing of that feature.
 
+## Local Validation
+
+Use pre-commit 4.4 or newer with Bash, Git, jq and Go available. Hook revisions
+are pinned and their native tool environments are cached; Docker and Azure
+credentials are not required. The first run downloads public dependencies.
+
+From the repository root:
+
+```bash
+export PRE_COMMIT_HOME="$PWD/.cache/pre-commit"
+pre-commit install --hook-type pre-commit --hook-type pre-push
+pre-commit run --all-files
+pre-commit run --hook-stage pre-push --all-files
+```
+
+If Git uses a shared `core.hooksPath`, do not overwrite the shared hook. With
+Git 2.54+ and pre-commit 4.6+, register repository-local commands alongside it:
+
+```bash
+git config --local hook.pre-commit.pre-commit.event pre-commit
+git config --local hook.pre-commit.pre-commit.command 'env PRE_COMMIT_HOME=.cache/pre-commit pre-commit hook-impl --hook-type pre-commit --'
+git config --local hook.pre-commit.pre-push.event pre-push
+git config --local hook.pre-commit.pre-push.command 'env PRE_COMMIT_HOME=.cache/pre-commit pre-commit hook-impl --hook-type pre-push --'
+```
+
+Commit hooks check staged JSON/YAML/XML, shell syntax, ShellCheck, check-only
+shell formatting, Python lint and secrets. Gitleaks checks staged changes with
+redacted output; `--all-files` does not turn that hook into a history scan.
+The broader runtime contracts run at pre-push or manual stage with mocked
+commands, not provisioning scripts. They require jq and do not prove Azure
+provider acceptance or replace a full ARM resource/security analyzer.
+
+The full scan currently exposes legacy ShellCheck and shell-formatting
+findings. Do not hide these with blanket exclusions or reformat unrelated
+files. The formatter hook never rewrites files; make intentional fixes and
+rerun the affected checks. Optional integration or VM image builds remain
+separate from Git hooks.
+
 ## Planning
 
 This is an open source project. We have a few mantras to ensure

@@ -1,0 +1,49 @@
+---
+minimum_pre_commit_version: '4.4.0'
+default_stages: [pre-commit]
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: check-json
+        types: [text]
+        files: '(\.json$|^\.jshintrc$)'
+      - id: check-yaml
+      - id: check-xml
+        types: [text]
+        files: '\.(xml|jmx)$'
+      - id: check-merge-conflict
+      - id: check-added-large-files
+      - id: detect-private-key
+  - repo: https://github.com/shellcheck-py/shellcheck-py
+    rev: v0.11.0.1
+    hooks:
+      - id: shellcheck
+  - repo: https://github.com/MaxWinterstein/shfmt-py
+    rev: v4.2.0
+    hooks:
+      - id: shfmt
+        args: [-l, -i, '4']
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.14.0
+    hooks:
+      - id: ruff-check
+        args: [--no-cache]
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.30.1
+    hooks:
+      - id: gitleaks
+  - repo: local
+    hooks:
+      - id: bash-syntax
+        name: Bash syntax
+        entry: bash etc/checkBashSyntax.sh
+        language: unsupported
+        types: [shell]
+      - id: runtime-contracts
+        name: Moodle deployment runtime contracts
+        entry: bash etc/checkRuntimeContracts.sh
+        language: unsupported
+        pass_filenames: false
+        always_run: true
+        stages: [pre-push, manual]
