@@ -552,7 +552,7 @@
             "type": "int"
         },
         "fileServerVmSku": {
-            "defaultValue": "Standard_D2ds_v5",
+            "defaultValue": "Standard_D4ds_v5",
             "metadata": {
                 "description": "VM size for the gluster or NFS-HA nodes"
             },

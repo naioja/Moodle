@@ -64,7 +64,7 @@
                 "description": "Azure VM SKU for the NFS HA VMs"
             },
             "type": "string",
-            "defaultValue": "Standard_D2ds_v5"
+            "defaultValue": "Standard_D4ds_v5"
         },
         "adminUserName": {
             "metadata": {
