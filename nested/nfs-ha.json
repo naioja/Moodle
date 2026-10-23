@@ -57,14 +57,14 @@
                 "description": "Switch to enable Azure Accelerated Networking (Note: this feature is NOT available for D1-level VM SKU)"
             },
             "type": "bool",
-            "defaultValue": false
+            "defaultValue": true
         },
         "vmSku": {
             "metadata": {
                 "description": "Azure VM SKU for the NFS HA VMs"
             },
             "type": "string",
-            "defaultValue": "Standard_DS2_v2"
+            "defaultValue": "Standard_D2ds_v5"
         },
         "adminUserName": {
             "metadata": {
