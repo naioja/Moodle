@@ -1,5 +1,5 @@
 {
-    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
         "moodleCommon": {
@@ -19,7 +19,7 @@
         {
             "condition": "[and(equals(parameters('moodleCommon').customVnetId, ''), equals(parameters('moodleCommon').fileServerType, 'nfs-ha'))]",
             "type": "Microsoft.Network/publicIPAddresses",
-            "apiVersion": "2024-05-01",
+            "apiVersion": "2026-03-01",
             "name": "[variables('nfsHaNatPublicIpName')]",
             "location": "[parameters('moodleCommon').location]",
             "sku": {
@@ -32,7 +32,7 @@
         {
             "condition": "[and(equals(parameters('moodleCommon').customVnetId, ''), equals(parameters('moodleCommon').fileServerType, 'nfs-ha'))]",
             "type": "Microsoft.Network/natGateways",
-            "apiVersion": "2024-05-01",
+            "apiVersion": "2026-03-01",
             "name": "[variables('nfsHaNatGatewayName')]",
             "location": "[parameters('moodleCommon').location]",
             "sku": {
@@ -52,16 +52,17 @@
         },
         {
             "type": "Microsoft.Network/virtualNetworks/subnets",
-            "apiVersion": "2017-10-01",
+            "apiVersion": "2026-03-01",
             "name": "[concat(parameters('vnetName'), '/', parameters('moodleCommon').subnetWeb)]",
             "location": "[parameters('moodleCommon').location]",
             "properties": {
-                "addressPrefix": "[parameters('moodleCommon').subnetWebRange]"
+                "addressPrefix": "[parameters('moodleCommon').subnetWebRange]",
+                "defaultOutboundAccess": true
             }
         },
         {
             "type": "Microsoft.Network/virtualNetworks/subnets",
-            "apiVersion": "2024-05-01",
+            "apiVersion": "2026-03-01",
             "name": "[concat(parameters('vnetName'), '/', parameters('moodleCommon').subnetSan)]",
             "location": "[parameters('moodleCommon').location]",
             "dependsOn": [
@@ -72,7 +73,7 @@
         },
         {
             "type": "Microsoft.Network/virtualNetworks/subnets",
-            "apiVersion": "2017-10-01",
+            "apiVersion": "2026-03-01",
             "name": "[concat(parameters('vnetName'), '/', parameters('moodleCommon').subnetRedis)]",
             "location": "[parameters('moodleCommon').location]",
             "dependsOn": [
@@ -84,7 +85,7 @@
         },
         {
             "type": "Microsoft.Network/virtualNetworks/subnets",
-            "apiVersion": "2017-10-01",
+            "apiVersion": "2026-03-01",
             "name": "[concat(parameters('vnetName'), '/', parameters('moodleCommon').subnetElastic)]",
             "location": "[parameters('moodleCommon').location]",
             "dependsOn": [
@@ -97,7 +98,7 @@
         {
             "condition": "[parameters('moodleCommon').vnetGwDeploySwitch]",
             "type": "Microsoft.Network/virtualNetworks/subnets",
-            "apiVersion": "2017-10-01",
+            "apiVersion": "2026-03-01",
             "name": "[concat(parameters('vnetName'), '/', parameters('moodleCommon').subnetGateway)]",
             "location": "[parameters('moodleCommon').location]",
             "dependsOn": [
@@ -109,7 +110,7 @@
         },
         {
             "type": "Microsoft.Network/virtualNetworks/subnets",
-            "apiVersion": "2017-10-01",
+            "apiVersion": "2026-03-01",
             "name": "[concat(parameters('vnetName'), '/', parameters('moodleCommon').subnetAppGw)]",
             "location": "[parameters('moodleCommon').location]",
             "dependsOn": [
@@ -122,7 +123,7 @@
         {
             "condition": "[and(parameters('moodleCommon').vnetDbDeploySwitch, equals(parameters('moodleCommon').dbServerType, 'mysqlflex'))]",
             "type": "Microsoft.Network/virtualNetworks/subnets",
-            "apiVersion": "2021-05-01",
+            "apiVersion": "2026-03-01",
             "name": "[concat(parameters('vnetName'),'/',parameters('moodleCommon').subnetDb)]",
             "location": "[parameters('moodleCommon').location]",
             "dependsOn": [

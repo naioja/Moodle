@@ -1,5 +1,5 @@
 {
-    "$schema": "http://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
         "moodleCommon": {
@@ -19,7 +19,7 @@
         {
             "condition": "[and(parameters('moodleCommon').vnetDbDeploySwitch, equals(parameters('moodleCommon').dbServerType, 'mysqlflex'))]",
             "type": "Microsoft.Network/privateDnsZones",
-            "apiVersion": "2018-09-01",
+            "apiVersion": "2024-06-01",
             "name": "[parameters('moodleCommon').mysqlflexPrivateDnsZoneName]",
             "location": "global",
             "tags": {},
@@ -28,7 +28,7 @@
         {
             "condition": "[and(parameters('moodleCommon').vnetDbDeploySwitch, equals(parameters('moodleCommon').dbServerType, 'mysqlflex'))]",
             "type": "Microsoft.Network/privateDnsZones/virtualNetworkLinks",
-            "apiVersion": "2020-06-01",
+            "apiVersion": "2024-06-01",
             "dependsOn": [
                 "[resourceId('Microsoft.Network/privateDnsZones', parameters('moodleCommon').mysqlflexPrivateDnsZoneName)]"
             ],

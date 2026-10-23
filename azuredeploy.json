@@ -1,5 +1,5 @@
 {
-    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
         "_artifactsLocation": {
@@ -769,12 +769,12 @@
     "resources": [
         {
             "type": "Microsoft.Resources/deployments",
-            "apiVersion": "2017-05-10",
+            "apiVersion": "2026-06-01",
             "name": "pid-738e3eec-68d4-4667-8377-c05c77c21f1b",
             "properties": {
                 "mode": "Incremental",
                 "template": {
-                    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+                    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
                     "contentVersion": "1.0.0.0",
                     "resources": []
                 }
@@ -782,7 +782,7 @@
         },
         {
             "type": "Microsoft.Resources/deployments",
-            "apiVersion": "2017-05-10",
+            "apiVersion": "2026-06-01",
             "name": "networkTemplate",
             "properties": {
                 "mode": "Incremental",
@@ -798,7 +798,7 @@
         },
         {
             "type": "Microsoft.Resources/deployments",
-            "apiVersion": "2017-05-10",
+            "apiVersion": "2026-06-01",
             "name": "storageAccountTemplate",
             "properties": {
                 "mode": "Incremental",
@@ -814,7 +814,7 @@
         },
         {
             "type": "Microsoft.Resources/deployments",
-            "apiVersion": "2017-05-10",
+            "apiVersion": "2026-06-01",
             "dependsOn": [
                 "Microsoft.Resources/deployments/networkTemplate"
             ],
@@ -849,7 +849,7 @@
         {
             "condition": "[parameters('azureBackupSwitch')]",
             "type": "Microsoft.Resources/deployments",
-            "apiVersion": "2017-05-10",
+            "apiVersion": "2026-06-01",
             "name": "recoveryTemplate",
             "properties": {
                 "mode": "Incremental",
@@ -866,7 +866,7 @@
         {
             "condition": "[parameters('redisDeploySwitch')]",
             "type": "Microsoft.Resources/deployments",
-            "apiVersion": "2017-05-10",
+            "apiVersion": "2026-06-01",
             "name": "redisTemplate",
             "dependsOn": [
                 "Microsoft.Resources/deployments/networkTemplate"
@@ -889,7 +889,7 @@
         {
             "condition": "[not(equals(parameters('searchType'), 'none'))]",
             "type": "Microsoft.Resources/deployments",
-            "apiVersion": "2017-05-10",
+            "apiVersion": "2026-06-01",
             "dependsOn": [
                 "Microsoft.Resources/deployments/networkTemplate",
                 "Microsoft.Resources/deployments/recoveryTemplate"
@@ -913,7 +913,7 @@
         {
             "condition": "[equals(parameters('fileServerType'),'nfs-ha')]",
             "type": "Microsoft.Resources/deployments",
-            "apiVersion": "2017-05-10",
+            "apiVersion": "2026-06-01",
             "dependsOn": [
                 "Microsoft.Resources/deployments/networkTemplate",
                 "Microsoft.Resources/deployments/recoveryTemplate"
@@ -981,7 +981,7 @@
         },
         {
             "type": "Microsoft.Resources/deployments",
-            "apiVersion": "2017-05-10",
+            "apiVersion": "2026-06-01",
             "dependsOn": [
                 "Microsoft.Resources/deployments/networkTemplate",
                 "Microsoft.Resources/deployments/dbTemplate",
@@ -1019,7 +1019,7 @@
         },
         {
             "type": "Microsoft.Resources/deployments",
-            "apiVersion": "2017-05-10",
+            "apiVersion": "2026-06-01",
             "dependsOn": [
                 "Microsoft.Resources/deployments/vmSetupParamsTemplate",
                 "Microsoft.Resources/deployments/nfsHaTemplate",
@@ -1054,7 +1054,7 @@
         },
         {
             "type": "Microsoft.Resources/deployments",
-            "apiVersion": "2017-05-10",
+            "apiVersion": "2026-06-01",
             "dependsOn": [
                 "Microsoft.Resources/deployments/vmSetupParamsTemplate",
                 "Microsoft.Resources/deployments/controllerTemplate",

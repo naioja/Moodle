@@ -1,5 +1,5 @@
 {
-    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
         "moodleCommon": {
@@ -24,7 +24,7 @@
     "resources": [
             {
             "type": "Microsoft.Network/networkSecurityGroups",
-            "apiVersion": "2017-10-01",
+            "apiVersion": "2026-03-01",
             "location": "[parameters('moodleCommon').location]",
             "name": "[parameters('moodleCommon').vmssNsgName]",
             "properties": {
@@ -63,17 +63,18 @@
         },
         {
             "type": "Microsoft.Storage/storageAccounts",
-            "apiVersion": "2019-06-01",
+            "apiVersion": "2026-09-01",
             "location": "[parameters('moodleCommon').location]",
             "name": "[parameters('moodleCommon').vmssdStorageAccounttName]",
             "kind": "StorageV2",
+            "properties": {},
             "sku": {
                 "name": "Standard_LRS"
             }
         },
         {
             "type": "Microsoft.Compute/virtualMachineScaleSets",
-            "apiVersion": "2019-07-01",
+            "apiVersion": "2026-04-01",
             "dependsOn": [
                 "[concat('Microsoft.Storage/storageAccounts/', parameters('moodleCommon').vmssdStorageAccounttName)]",
                 "[concat('Microsoft.Network/networkSecurityGroups/', parameters('moodleCommon').vmssNsgName)]"
@@ -81,6 +82,7 @@
             "location": "[parameters('moodleCommon').location]",
             "name": "[parameters('moodleCommon').vmssName]",
             "properties": {
+                "orchestrationMode": "Uniform",
                 "overprovision": true,
                 "upgradePolicy": {
                     "mode": "Manual"
@@ -174,7 +176,7 @@
         },
         {
             "type": "Microsoft.Insights/autoscaleSettings",
-            "apiVersion": "2015-04-01",
+            "apiVersion": "2022-10-01",
             "dependsOn": [
                 "[concat('Microsoft.Compute/virtualMachineScaleSets/', parameters('moodleCommon').vmssName)]"
             ],
@@ -265,7 +267,7 @@
     },
     "outputs": {
         "webvm1IP": {
-            "value": "[reference(variables('webvmss1NIC'), '2017-03-30').ipConfigurations[0].properties.privateIPAddress]",
+            "value": "[reference(variables('webvmss1NIC'), '2018-10-01').ipConfigurations[0].properties.privateIPAddress]",
             "type": "string"
         }
     }

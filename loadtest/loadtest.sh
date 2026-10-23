@@ -1,36 +1,12 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 
 # This is not fully tested. Just documenting what's needed.
 function install_java_and_jmeter
 {
-    sudo apt update || return 1
-    sudo apt install -y openjdk-8-jdk || return 1
-
-    wget -O apache-jmeter-4.0.tgz https://archive.apache.org/dist/jmeter/binaries/apache-jmeter-4.0.tgz || return 1
-    tar xfz apache-jmeter-4.0.tgz -C ~
-    mkdir -p ~/bin
-    ln -s ~/apache-jmeter-4.0/bin/jmeter ~/bin/jmeter
-    rm apache-jmeter-4.0.tgz
-
-    wget -O mysql-connector-java-5.1.45.tar.gz https://dev.mysql.com/get/Downloads/Connector-J/mysql-connector-java-5.1.45.tar.gz || return 1
-    tar xfz mysql-connector-java-5.1.45.tar.gz
-    mv mysql-connector-java-5.1.45/mysql-connector-java-5.1.45-bin.jar ~/apache-jmeter-4.0/lib
-    rm -rf mysql-connector-java-5.1.45*
-
-    wget -O postgres-42.2.1.jar https://jdbc.postgresql.org/download/postgresql-42.2.1.jar || return 1
-    mv postgres-42.2.1.jar ~/apache-jmeter-4.0/lib
-
-    # Have to have jmeter plugins manager and have it download the needed plugins in advance...
-    wget -O jmeter-plugins-manager-0.19.jar http://search.maven.org/remotecontent?filepath=kg/apc/jmeter-plugins-manager/0.19/jmeter-plugins-manager-0.19.jar || return 1
-    mv jmeter-plugins-manager-0.19.jar ~/apache-jmeter-4.0/lib/ext
-
-    wget -O cmdrunner-2.0.jar http://search.maven.org/remotecontent?filepath=kg/apc/cmdrunner/2.0/cmdrunner-2.0.jar || return 1
-    mv cmdrunner-2.0.jar ~/apache-jmeter-4.0/lib
-    java -cp ~/apache-jmeter-4.0/lib/ext/jmeter-plugins-manager-0.19.jar org.jmeterplugins.repository.PluginManagerCMDInstaller
-    # TODO Hard-coded .jmx file here. Do this for each individual .jmx file
-    wget -O tmp-for-plugin-install.jmx https://raw.githubusercontent.com/Azure/Moodle/master/loadtest/simple-test-1.jmx || return 1
-    ~/apache-jmeter-4.0/bin/PluginsManagerCMD.sh install-for-jmx tmp-for-plugin-install.jmx
-    rm tmp-for-plugin-install.jmx
+    local script_directory
+    script_directory="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+    bash "$script_directory/install-jmeter.sh" "${1:-$HOME/.local/share/moodle-loadtest}"
 }
 
 function install_az_cli

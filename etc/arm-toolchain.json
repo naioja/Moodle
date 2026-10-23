@@ -1,0 +1,22 @@
+{
+    "assessmentDate": "2026-10-23",
+    "powershell": {
+        "version": "7.6.8",
+        "url": "https://github.com/PowerShell/PowerShell/releases/download/v7.6.8/powershell-7.6.8-linux-x64.tar.gz",
+        "sha256": "59112e38ad83350e4f6dc0195953c66b5926792f300ca2e7691b8242e7a16e7f"
+    },
+    "armTtk": {
+        "commit": "2aa61e7b9d4eb764c4e3bce7f07973adf633eeff",
+        "url": "https://github.com/Azure/arm-ttk/archive/2aa61e7b9d4eb764c4e3bce7f07973adf633eeff.tar.gz",
+        "sha256": "bc60ef5b9a5f0cd5a611fe454c1a950072deb1526f7ceec5c6dc58a40475c744"
+    },
+    "psRuleAzure": {
+        "version": "1.47.0"
+    },
+    "psRule": {
+        "version": "2.9.0"
+    },
+    "schemas": {
+        "commit": "bf674099772d7c32f50883f179f180cf682a00ac"
+    }
+}

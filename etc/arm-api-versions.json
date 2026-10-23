@@ -1,0 +1,197 @@
+{
+  "assessmentDate": "2026-10-23",
+  "schemaCommit": "bf674099772d7c32f50883f179f180cf682a00ac",
+  "resources": {
+    "Microsoft.Network/natGateways": {
+      "apiVersion": "2026-03-01",
+      "source": "https://raw.githubusercontent.com/Azure/azure-resource-manager-schemas/bf674099772d7c32f50883f179f180cf682a00ac/schemas/2026-03-01/Microsoft.Network.json"
+    },
+    "Microsoft.Network/networkInterfaces": {
+      "apiVersion": "2026-03-01",
+      "source": "https://raw.githubusercontent.com/Azure/azure-resource-manager-schemas/bf674099772d7c32f50883f179f180cf682a00ac/schemas/2026-03-01/Microsoft.Network.json"
+    },
+    "Microsoft.DBforPostgreSQL/flexibleServers/firewallRules": {
+      "apiVersion": "2026-10-01",
+      "source": "https://raw.githubusercontent.com/Azure/azure-resource-manager-schemas/bf674099772d7c32f50883f179f180cf682a00ac/schemas/2026-10-01/Microsoft.DBforPostgreSQL.json"
+    },
+    "Microsoft.RecoveryServices/vaults": {
+      "apiVersion": "2026-07-01",
+      "source": "https://raw.githubusercontent.com/Azure/azure-resource-manager-schemas/bf674099772d7c32f50883f179f180cf682a00ac/schemas/2026-07-01/Microsoft.RecoveryServices.json"
+    },
+    "Microsoft.Search/searchServices": {
+      "apiVersion": "2025-05-01",
+      "source": "https://raw.githubusercontent.com/Azure/azure-resource-manager-schemas/bf674099772d7c32f50883f179f180cf682a00ac/schemas/2025-05-01/Microsoft.Search.json"
+    },
+    "Microsoft.Network/virtualNetworkGateways": {
+      "apiVersion": "2026-03-01",
+      "source": "https://raw.githubusercontent.com/Azure/azure-resource-manager-schemas/bf674099772d7c32f50883f179f180cf682a00ac/schemas/2026-03-01/Microsoft.Network.json"
+    },
+    "Microsoft.Network/privateDnsZones/virtualNetworkLinks": {
+      "apiVersion": "2024-06-01",
+      "source": "https://raw.githubusercontent.com/Azure/azure-resource-manager-schemas/bf674099772d7c32f50883f179f180cf682a00ac/schemas/2024-06-01/Microsoft.Network.json"
+    },
+    "Microsoft.Cache/redis": {
+      "apiVersion": "2024-11-01",
+      "source": "https://raw.githubusercontent.com/Azure/azure-resource-manager-schemas/bf674099772d7c32f50883f179f180cf682a00ac/schemas/2024-11-01/Microsoft.Cache.json"
+    },
+    "Microsoft.Network/ddosProtectionPlans": {
+      "apiVersion": "2026-03-01",
+      "source": "https://raw.githubusercontent.com/Azure/azure-resource-manager-schemas/bf674099772d7c32f50883f179f180cf682a00ac/schemas/2026-03-01/Microsoft.Network.json"
+    },
+    "Microsoft.RecoveryServices/vaults/backupPolicies": {
+      "apiVersion": "2026-10-01",
+      "source": "https://raw.githubusercontent.com/Azure/azure-resource-manager-schemas/bf674099772d7c32f50883f179f180cf682a00ac/schemas/2026-10-01/Microsoft.RecoveryServices.json"
+    },
+    "Microsoft.DBforMySQL/flexibleServers": {
+      "apiVersion": "2024-12-30",
+      "source": "https://raw.githubusercontent.com/Azure/azure-resource-manager-schemas/bf674099772d7c32f50883f179f180cf682a00ac/schemas/2024-12-30/Microsoft.DBForMySql.json"
+    },
+    "Microsoft.Compute/virtualMachines": {
+      "apiVersion": "2026-04-01",
+      "source": "https://raw.githubusercontent.com/Azure/azure-resource-manager-schemas/bf674099772d7c32f50883f179f180cf682a00ac/schemas/2026-04-01/Microsoft.Compute.json"
+    },
+    "Microsoft.Network/applicationGateways": {
+      "apiVersion": "2026-03-01",
+      "source": "https://raw.githubusercontent.com/Azure/azure-resource-manager-schemas/bf674099772d7c32f50883f179f180cf682a00ac/schemas/2026-03-01/Microsoft.Network.json"
+    },
+    "Microsoft.Sql/servers": {
+      "apiVersion": "2025-01-01",
+      "source": "https://raw.githubusercontent.com/Azure/azure-resource-manager-schemas/bf674099772d7c32f50883f179f180cf682a00ac/schemas/2025-01-01/Microsoft.Sql.json"
+    },
+    "Microsoft.Storage/storageAccounts": {
+      "apiVersion": "2026-09-01",
+      "source": "https://raw.githubusercontent.com/Azure/azure-resource-manager-schemas/bf674099772d7c32f50883f179f180cf682a00ac/schemas/2026-09-01/Microsoft.Storage.json"
+    },
+    "Microsoft.Resources/deployments": {
+      "apiVersion": "2026-06-01",
+      "source": "https://raw.githubusercontent.com/Azure/azure-resource-manager-schemas/bf674099772d7c32f50883f179f180cf682a00ac/schemas/2026-06-01/Microsoft.Resources.json"
+    },
+    "Microsoft.Compute/availabilitySets": {
+      "apiVersion": "2026-04-01",
+      "source": "https://raw.githubusercontent.com/Azure/azure-resource-manager-schemas/bf674099772d7c32f50883f179f180cf682a00ac/schemas/2026-04-01/Microsoft.Compute.json"
+    },
+    "Microsoft.Compute/virtualMachineScaleSets": {
+      "apiVersion": "2026-04-01",
+      "source": "https://raw.githubusercontent.com/Azure/azure-resource-manager-schemas/bf674099772d7c32f50883f179f180cf682a00ac/schemas/2026-04-01/Microsoft.Compute.json"
+    },
+    "Microsoft.RecoveryServices/vaults/backupFabrics/protectionContainers/protectedItems": {
+      "apiVersion": "2026-10-01",
+      "source": "https://raw.githubusercontent.com/Azure/azure-resource-manager-schemas/bf674099772d7c32f50883f179f180cf682a00ac/schemas/2026-10-01/Microsoft.RecoveryServices.json"
+    },
+    "Microsoft.Storage/storageAccounts/fileServices/shares": {
+      "apiVersion": "2026-09-01",
+      "source": "https://raw.githubusercontent.com/Azure/azure-resource-manager-schemas/bf674099772d7c32f50883f179f180cf682a00ac/schemas/2026-09-01/Microsoft.Storage.json"
+    },
+    "Microsoft.Sql/servers/firewallRules": {
+      "apiVersion": "2025-01-01",
+      "source": "https://raw.githubusercontent.com/Azure/azure-resource-manager-schemas/bf674099772d7c32f50883f179f180cf682a00ac/schemas/2025-01-01/Microsoft.Sql.json"
+    },
+    "Microsoft.Insights/autoscalesettings": {
+      "apiVersion": "2022-10-01",
+      "source": "https://raw.githubusercontent.com/Azure/azure-resource-manager-schemas/bf674099772d7c32f50883f179f180cf682a00ac/schemas/2022-10-01/Microsoft.Insights.json"
+    },
+    "Microsoft.Network/publicIPAddresses": {
+      "apiVersion": "2026-03-01",
+      "source": "https://raw.githubusercontent.com/Azure/azure-resource-manager-schemas/bf674099772d7c32f50883f179f180cf682a00ac/schemas/2026-03-01/Microsoft.Network.json"
+    },
+    "Microsoft.DBforMySQL/flexibleServers/configurations": {
+      "apiVersion": "2024-12-30",
+      "source": "https://raw.githubusercontent.com/Azure/azure-resource-manager-schemas/bf674099772d7c32f50883f179f180cf682a00ac/schemas/2024-12-30/Microsoft.DBForMySql.json"
+    },
+    "Microsoft.DBforPostgreSQL/flexibleServers": {
+      "apiVersion": "2026-10-01",
+      "source": "https://raw.githubusercontent.com/Azure/azure-resource-manager-schemas/bf674099772d7c32f50883f179f180cf682a00ac/schemas/2026-10-01/Microsoft.DBforPostgreSQL.json"
+    },
+    "Microsoft.Network/virtualNetworks": {
+      "apiVersion": "2026-03-01",
+      "source": "https://raw.githubusercontent.com/Azure/azure-resource-manager-schemas/bf674099772d7c32f50883f179f180cf682a00ac/schemas/2026-03-01/Microsoft.Network.json"
+    },
+    "Microsoft.DBforMySQL/flexibleServers/firewallRules": {
+      "apiVersion": "2024-12-30",
+      "source": "https://raw.githubusercontent.com/Azure/azure-resource-manager-schemas/bf674099772d7c32f50883f179f180cf682a00ac/schemas/2024-12-30/Microsoft.DBForMySql.json"
+    },
+    "Microsoft.Network/networkSecurityGroups": {
+      "apiVersion": "2026-03-01",
+      "source": "https://raw.githubusercontent.com/Azure/azure-resource-manager-schemas/bf674099772d7c32f50883f179f180cf682a00ac/schemas/2026-03-01/Microsoft.Network.json"
+    },
+    "Microsoft.Network/virtualNetworks/subnets": {
+      "apiVersion": "2026-03-01",
+      "source": "https://raw.githubusercontent.com/Azure/azure-resource-manager-schemas/bf674099772d7c32f50883f179f180cf682a00ac/schemas/2026-03-01/Microsoft.Network.json"
+    },
+    "Microsoft.Compute/virtualMachines/extensions": {
+      "apiVersion": "2026-04-01",
+      "source": "https://raw.githubusercontent.com/Azure/azure-resource-manager-schemas/bf674099772d7c32f50883f179f180cf682a00ac/schemas/2026-04-01/Microsoft.Compute.Extensions.json"
+    },
+    "Microsoft.Network/privateDnsZones": {
+      "apiVersion": "2024-06-01",
+      "source": "https://raw.githubusercontent.com/Azure/azure-resource-manager-schemas/bf674099772d7c32f50883f179f180cf682a00ac/schemas/2024-06-01/Microsoft.Network.json"
+    },
+    "Microsoft.Network/loadBalancers": {
+      "apiVersion": "2026-03-01",
+      "source": "https://raw.githubusercontent.com/Azure/azure-resource-manager-schemas/bf674099772d7c32f50883f179f180cf682a00ac/schemas/2026-03-01/Microsoft.Network.json"
+    }
+  },
+  "templatePins": {
+    "nested/search-elastic.json": {
+      "reason": "Elasticsearch changes are explicitly deferred by the user. Preserve this template unchanged while continuing exact API, shape and link checks.",
+      "resources": {
+        "Microsoft.Compute/virtualMachines": {
+          "apiVersion": "2017-03-30",
+          "source": "https://raw.githubusercontent.com/Azure/azure-resource-manager-schemas/bf674099772d7c32f50883f179f180cf682a00ac/schemas/2017-03-30/Microsoft.Compute.json"
+        },
+        "Microsoft.Network/networkInterfaces": {
+          "apiVersion": "2017-10-01",
+          "source": "https://raw.githubusercontent.com/Azure/azure-resource-manager-schemas/bf674099772d7c32f50883f179f180cf682a00ac/schemas/2017-10-01/Microsoft.Network.json"
+        },
+        "Microsoft.Resources/deployments": {
+          "apiVersion": "2017-05-10",
+          "source": "https://raw.githubusercontent.com/Azure/azure-resource-manager-schemas/bf674099772d7c32f50883f179f180cf682a00ac/schemas/2017-05-10/Microsoft.Resources.json"
+        }
+      }
+    },
+    "nested/search-elastic-config.json": {
+      "reason": "Elasticsearch changes are explicitly deferred by the user. Preserve the existing extension API without disabling validation.",
+      "resources": {
+        "Microsoft.Compute/virtualMachines/extensions": {
+          "apiVersion": "2017-03-30",
+          "source": "https://raw.githubusercontent.com/Azure/azure-resource-manager-schemas/bf674099772d7c32f50883f179f180cf682a00ac/schemas/2017-03-30/Microsoft.Compute.Extensions.json"
+        }
+      }
+    }
+  },
+  "operations": {
+    "nested/controller.json": {
+      "apiVersion": "2026-03-01",
+      "resourceType": "Microsoft.Network/publicIPAddresses"
+    },
+    "nested/network.json": {
+      "apiVersion": "2026-03-01",
+      "resourceType": "Microsoft.Network/virtualNetworks and Microsoft.Network/publicIPAddresses"
+    },
+    "nested/storageAccount.json": {
+      "apiVersion": "2026-09-01",
+      "resourceType": "Microsoft.Storage/storageAccounts"
+    },
+    "nested/search-azure.json": {
+      "apiVersion": "2025-05-01",
+      "resourceType": "Microsoft.Search/searchServices"
+    },
+    "nested/redis.json": {
+      "apiVersion": "2024-11-01",
+      "resourceType": "Microsoft.Cache/redis"
+    },
+    "nested/webvmss.json": {
+      "apiVersion": "2018-10-01",
+      "resourceType": "Microsoft.Compute/virtualMachineScaleSets/virtualMachines/networkInterfaces",
+      "source": "https://learn.microsoft.com/en-us/rest/api/virtualnetwork/network-interfaces/get-virtual-machine-scale-set-network-interface?view=rest-virtualnetwork-2018-10-01",
+      "reason": "The VMSS instance NIC is a Network GET operation under a Compute resource path. Its published operation contract documents 2018-10-01; do not substitute the VMSS Compute deployment API. Newer operation-version support has not been verified."
+    }
+  },
+  "exceptions": {
+    "Microsoft.DBforMySQL/flexibleServers": {
+      "apiVersion": "2025-06-01-preview",
+      "source": "https://raw.githubusercontent.com/Azure/azure-resource-manager-schemas/bf674099772d7c32f50883f179f180cf682a00ac/schemas/2025-06-01-preview/Microsoft.DBForMySql.json",
+      "reason": "Moodle 5.3 requires MySQL 8.4. The latest published stable schema, 2024-12-30, does not include 8.4; this preview schema explicitly includes it. Child configurations and firewall rules use stable APIs."
+    }
+  }
+}
