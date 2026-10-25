@@ -42,7 +42,7 @@
     "resources": [
         {
             "type": "Microsoft.DBforPostgreSQL/flexibleServers",
-            "apiVersion": "2025-08-01",
+            "apiVersion": "2026-10-01",
             "location": "[parameters('moodleCommon').location]",
             "name": "[parameters('moodleCommon').serverName]",
             "properties": {
@@ -69,7 +69,7 @@
             },
             "resources": [
                 {
-                    "apiVersion": "2025-08-01",
+                    "apiVersion": "2026-10-01",
                     "dependsOn": [
                         "[concat('Microsoft.DBforPostgreSQL/flexibleServers/', parameters('moodleCommon').serverName)]"
                     ],
@@ -82,7 +82,7 @@
                     "type": "firewallRules"
                 },
                 {
-                    "apiVersion": "2025-08-01",
+                    "apiVersion": "2026-10-01",
                     "dependsOn": [
                         "[concat('Microsoft.DBforPostgreSQL/flexibleServers/', parameters('moodleCommon').serverName)]"
                     ],
@@ -95,7 +95,7 @@
                     "type": "firewallRules"
                 },
                 {
-                    "apiVersion": "2025-08-01",
+                    "apiVersion": "2026-10-01",
                     "dependsOn": [
                         "[concat('Microsoft.DBforPostgreSQL/flexibleServers/', parameters('moodleCommon').serverName)]"
                     ],
@@ -108,7 +108,7 @@
                     "type": "firewallRules"
                 },
                 {
-                    "apiVersion": "2025-08-01",
+                    "apiVersion": "2026-10-01",
                     "dependsOn": [
                         "[concat('Microsoft.DBforPostgreSQL/flexibleServers/', parameters('moodleCommon').serverName)]"
                     ],

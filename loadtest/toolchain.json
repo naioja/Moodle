@@ -1,0 +1,41 @@
+{
+    "jmeterVersion": "5.6.3",
+    "minimumJavaVersion": 17,
+    "artifacts": [
+        {
+            "file": "apache-jmeter-5.6.3.tgz",
+            "url": "https://downloads.apache.org/jmeter/binaries/apache-jmeter-5.6.3.tgz",
+            "algorithm": "sha512",
+            "digest": "5978a1a35edb5a7d428e270564ff49d2b1b257a65e17a759d259a9283fc17093e522fe46f474a043864aea6910683486340706d745fcdf3db1505fd71e689083",
+            "destination": "archive"
+        },
+        {
+            "file": "mysql-connector-j-26.10.0.jar",
+            "url": "https://repo.maven.apache.org/maven2/com/mysql/mysql-connector-j/26.10.0/mysql-connector-j-26.10.0.jar",
+            "algorithm": "sha256",
+            "digest": "cef70caf532833c9ab8f41f74773ce22c08bf503fad215c9c2ee1e9db87e759e",
+            "destination": "lib"
+        },
+        {
+            "file": "postgresql-42.7.14.jar",
+            "url": "https://repo.maven.apache.org/maven2/org/postgresql/postgresql/42.7.14/postgresql-42.7.14.jar",
+            "algorithm": "sha256",
+            "digest": "73914527305a40cce504b0d3d90b23caf565136912d607ae8ae7c5895512332c",
+            "destination": "lib"
+        },
+        {
+            "file": "jmeter-plugins-manager-2.0.jar",
+            "url": "https://repo.maven.apache.org/maven2/kg/apc/jmeter-plugins-manager/2.0/jmeter-plugins-manager-2.0.jar",
+            "algorithm": "sha256",
+            "digest": "bc5a9916da44b19f26dada0a09fd7df17f60026dc5d71d30e6f983ef515fa99d",
+            "destination": "lib/ext"
+        },
+        {
+            "file": "cmdrunner-2.3.jar",
+            "url": "https://repo.maven.apache.org/maven2/kg/apc/cmdrunner/2.3/cmdrunner-2.3.jar",
+            "algorithm": "sha256",
+            "digest": "f7674154e38428e6bab0261c7dc8af1b9c59f241df4d58a077462432b8fac64e",
+            "destination": "lib"
+        }
+    ]
+}

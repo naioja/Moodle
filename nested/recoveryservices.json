@@ -1,5 +1,5 @@
 {
-    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
         "moodleCommon": {
@@ -12,7 +12,7 @@
     "resources": [
         {
             "type": "Microsoft.RecoveryServices/vaults",
-            "apiVersion": "2016-06-01",
+            "apiVersion": "2026-07-01",
             "location": "[parameters('moodleCommon').location]",
             "name": "[parameters('moodleCommon').vaultName]",
             "properties": {},
@@ -23,7 +23,7 @@
         },
         {
             "type": "Microsoft.RecoveryServices/vaults/backupPolicies",
-            "apiVersion": "2017-07-01",
+            "apiVersion": "2026-10-01",
             "dependsOn": [
                 "[concat('Microsoft.RecoveryServices/vaults/', parameters('moodleCommon').vaultName)]"
             ],
@@ -53,7 +53,6 @@
                             ]
                         },
                         "retentionScheduleFormatType": "Daily",
-                        "retentionScheduleWeekly": null,
                         "retentionTimes": "[variables('scheduleRunTimes')]"
                     },
                     "retentionPolicyType": "LongTermRetentionPolicy",
@@ -68,7 +67,6 @@
                 },
                 "schedulePolicy": {
                     "schedulePolicyType": "SimpleSchedulePolicy",
-                    "scheduleRunDays": null,
                     "scheduleRunFrequency": "Daily",
                     "scheduleRunTimes": "[variables('scheduleRunTimes')]"
                 }

@@ -1,5 +1,5 @@
 {
-    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
         "moodleCommon": {
@@ -30,7 +30,7 @@
     "resources": [
         {
             "type": "Microsoft.Network/networkSecurityGroups",
-            "apiVersion": "2017-10-01",
+            "apiVersion": "2026-03-01",
             "location": "[parameters('moodleCommon').location]",
             "name": "[parameters('moodleCommon').ctlrNsgName]",
             "properties": {
@@ -69,7 +69,7 @@
         },
         {
             "type": "Microsoft.Network/networkInterfaces",
-            "apiVersion": "2017-10-01",
+            "apiVersion": "2026-03-01",
             "dependsOn": [
                 "[concat('Microsoft.Network/networkSecurityGroups/', parameters('moodleCommon').ctlrNsgName)]"
             ],
@@ -101,7 +101,7 @@
         },
         {
             "type": "Microsoft.Compute/virtualMachines",
-            "apiVersion": "2017-03-30",
+            "apiVersion": "2026-04-01",
             "dependsOn": [
                 "[concat('Microsoft.Network/networkInterfaces/', parameters('moodleCommon').ctlrNicName)]"
             ],
@@ -154,7 +154,7 @@
         {
             "condition": "[parameters('moodleCommon').applyScriptsSwitch]",
             "type": "Microsoft.Resources/deployments",
-            "apiVersion": "2017-05-10",
+            "apiVersion": "2026-06-01",
             "dependsOn": [
                 "[concat('Microsoft.Compute/virtualMachines/', parameters('moodleCommon').ctlrVmName)]"
             ],
@@ -174,7 +174,7 @@
         {
             "condition": "[parameters('moodleCommon').azureBackupSwitch]",
             "type": "Microsoft.Resources/deployments",
-            "apiVersion": "2017-05-10",
+            "apiVersion": "2026-06-01",
             "dependsOn": [
                 "[concat('Microsoft.Compute/virtualMachines/',parameters('moodleCommon').ctlrVmName)]"
             ],
@@ -226,7 +226,7 @@
     },
     "outputs": {
         "controllerIP": {
-            "value": "[reference(resourceId('Microsoft.Network/publicIPAddresses', parameters('moodleCommon').ctlrPipName), '2017-10-01').ipAddress]",
+            "value": "[reference(resourceId('Microsoft.Network/publicIPAddresses', parameters('moodleCommon').ctlrPipName), '2026-03-01').ipAddress]",
             "type": "string"
         }
     }
