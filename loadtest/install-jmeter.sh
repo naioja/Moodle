@@ -41,4 +41,6 @@ done < <(jq -er '.artifacts[] | [.file, .url, .algorithm, .digest, .destination]
 
 java -cp "$jmeter_home/lib/ext/jmeter-plugins-manager-2.0.jar" org.jmeterplugins.repository.PluginManagerCMDInstaller
 "$jmeter_home/bin/jmeter" --version
+mkdir -p "$HOME/bin"
+ln -sfn "$(cd -- "$jmeter_home/bin" && pwd)/jmeter" "$HOME/bin/jmeter"
 printf 'JMeter is installed at %s\n' "$jmeter_home"

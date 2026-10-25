@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-set -euo pipefail
 
 # This is not fully tested. Just documenting what's needed.
 function install_java_and_jmeter

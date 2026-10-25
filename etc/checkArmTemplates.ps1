@@ -235,7 +235,7 @@ if ($Mode -eq 'Inventory') {
 if ($Mode -eq 'RefreshCatalog') {
     $toolManifest = Get-Content (Join-Path $RepositoryRoot 'etc/arm-toolchain.json') -Raw | ConvertFrom-Json -AsHashtable
     $schemaCommit = $toolManifest.schemas.commit
-    $tree = Get-Content (Join-Path $cacheDirectory 'schema-tree.json') -Raw | ConvertFrom-Json
+    $tree = Invoke-RestMethod -Uri "https://api.github.com/repos/Azure/azure-resource-manager-schemas/git/trees/${schemaCommit}?recursive=1"
     if ($tree.truncated) { throw 'The published schema tree is truncated.' }
     $versions = @{}
     foreach ($namespace in @($inventory.Type | ForEach-Object { ($_ -split '/')[0] } | Sort-Object -Unique)) {
