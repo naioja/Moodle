@@ -166,6 +166,17 @@ Possible Values: null
 Default: true
 
 
+### vnetDbDeploySwitch
+
+Switch to deploying the db in VNet. Note: currently the Vnet DB Deployment is available for mysqlflex only. For other db server types, the database will not be deployed in VNet.
+
+Type: bool
+
+Possible Values: null
+
+Default: false
+
+
 ### httpsTermination
 
 Indicates where https termination occurs. 'VMSS' is for https termination at the VMSS instance VMs (using nginx https proxy). 'AppGw' is for https termination with an Azure Application Gateway. When selecting this, you need to specify all appGw* parameters. 'None' is for testing only with no https. 'None' may not be used with a separately configured https termination layer. If you want to use the 'None' option with your separately configured https termination layer, you'll need to update your Moodle config.php manually for $cfg->wwwroot and $cfg->sslproxy.
@@ -199,17 +210,6 @@ Possible Values: ["MOODLE_503_STABLE"]
 Default: MOODLE_503_STABLE
 
 Moodle 5.3 serves web content and plugins from `public` below the code root. Shared code uses `/moodle/html/moodle/public`; frontend local copies use `/var/www/html/moodle/public`. Keep `config.php` and the retained `admin/cli/install.php` and `admin/cli/cron.php` entrypoints at the code root. The search indexer is under `public/search/cli/indexer.php`. Correct paths do not establish optional plugin version compatibility.
-
-
-### phpVersion
-
-PHP version to install. Moodle 5.3 requires PHP 8.3.
-
-Type: string
-
-Possible Values: ["8.3"]
-
-Default: 8.3
 
 
 ### sshPublicKey
@@ -255,7 +255,7 @@ Type: string
 
 Possible Values: ["apache","nginx"]
 
-Default: apache
+Default: nginx
 
 
 ### autoscaleVmSku
@@ -302,13 +302,24 @@ Possible Values: ["Premium_LRS","Standard_LRS"]
 Default: Premium_LRS
 
 
+### phpVersion
+
+php version
+
+Type: string
+
+Possible Values: ["8.3"]
+
+Default: 8.3
+
+
 ### dbServerType
 
 Database type
 
 Type: string
 
-Possible Values: ["postgres","mysql","mssql","mysqlflex"]
+Possible Values: ["postgres","mssql","mysqlflex"]
 
 Default: mysqlflex
 
@@ -324,53 +335,31 @@ Possible Values: null
 Default: dbadmin
 
 
-### mysqlPgresVcores
+### moodleDbName
 
-MySql/Postgresql vCores. For Basic tier, only 1 & 2 are allowed. For GeneralPurpose tier, 2, 4, 8, 16, 32 are allowed. For MemoryOptimized, 2, 4, 8, 16 are allowed.
+Moodle Database name
 
-Type: int
-
-Possible Values: [1,2,4,8,16,32]
-
-Default: 2
-
-
-### mysqlPgresStgSizeGB
-
-MySql/Postgresql storage size in GB. Minimum 5GB, increase by 1GB, up to 1TB (1024 GB)
-
-Type: int
+Type: string
 
 Possible Values: null
 
-Default: 125
+Default: moodle
 
 
-### mysqlPgresSkuTier
+### moodleDbUser
 
-MySql/Postgresql sku tier
-
-Type: string
-
-Possible Values: ["Basic","GeneralPurpose","MemoryOptimized"]
-
-Default: GeneralPurpose
-
-
-### mysqlPgresSkuHwFamily
-
-MySql/Postgresql sku hardware family. Central US is Gen4 only, so make sure to change this parameter to Gen4 if your deployment is on Central US.
+Moodle Database username. This user is different from Database admin user.
 
 Type: string
 
-Possible Values: ["Gen4","Gen5"]
+Possible Values: null
 
-Default: Gen5
+Default: moodle
 
 
 ### mysqlflexVersion
 
-MySQL Flexible Server version for new Moodle 5.3 deployments. Moodle 5.3 requires MySQL 8.4. The separate `mysqlVersion` parameter is retained for the retired Single Server route and does not select the Flexible Server engine.
+MySQL Flexible Server version for new Moodle 5.3 deployments. Uses API 2025-06-01-preview for MySQL 8.4; existing databases require a separate backed-up upgrade and cutover plan.
 
 Type: string
 
@@ -381,26 +370,125 @@ Default: 8.4
 The [2025-06-01-preview control-plane API](https://learn.microsoft.com/en-us/azure/templates/microsoft.dbformysql/2025-06-01-preview/flexibleservers) documents the `8.4` engine value; the published stable `2024-12-30` schema does not. This is a preview management API for a GA engine, not a claim of completed regional/provider/runtime validation. Check availability before deployment. Do not apply these new defaults as an unattended in-place upgrade: take consistent DB, Moodle data, code/plugin and configuration backups, rehearse restore and any required intermediate Moodle upgrades, and plan cutover/rollback without relying on a database downgrade.
 
 
-### mysqlVersion
+### mysqlflexSkuName
 
-Legacy MySQL Single Server version. Not used for `mysqlflex`; the retired Single Server route is not certified for Moodle 5.3.
+The name of the sku for Azure Database for MySQL Flexible Servers, e.g. Standard_D32ds_v4. Complete list is available here : https://learn.microsoft.com/en-us/azure/mysql/flexible-server/concepts-service-tiers-storage
 
 Type: string
 
-Possible Values: ["8.0.21"]
+Possible Values: ["Standard_B1s","Standard_B1ms","Standard_B2s","Standard_B2ms","Standard_B4ms","Standard_B8ms","Standard_B12ms","Standard_B16ms","Standard_B20ms","Standard_D2ads_v5","Standard_D2ds_v4","Standard_D4ads_v5","Standard_D4ds_v4","Standard_D8ads_v5","Standard_D8ds_v4","Standard_D16ads_v5","Standard_D16ds_v4","Standard_D32ads_v5","Standard_D32ds_v4","Standard_D48ads_v5","Standard_D48ds_v4","Standard_D64ads_v5","Standard_D64ds_v4","Standard_E2ds_v4","Standard_E2ads_v5","Standard_E4ds_v4","Standard_E4ads_v5","Standard_E8ds_v4","Standard_E8ads_v5","Standard_E16ds_v4","Standard_E16ads_v5","Standard_E32ds_v4","Standard_E32ads_v5","Standard_E48ds_v4","Standard_E48ads_v5","Standard_E64ds_v4","Standard_E64ads_v5","Standard_E80ids_v4","Standard_E2ds_v5","Standard_E4ds_v5","Standard_E8ds_v5","Standard_E16ds_v5","Standard_E32ds_v5","Standard_E48ds_v5","Standard_E64ds_v5","Standard_E96ds_v5"]
 
-Default: 8.0.21
+Default: Standard_B2s
+
+
+### mysqlflexStgSizeGiB
+
+Azure Database for MySQL Flexible server storage size in GiB. Minimum 20GiB, increase by 1GiB, up to 16TiB (1024 GiB)
+
+Type: int
+
+Possible Values: null
+
+Default: 20
+
+
+### mysqlflexStgIops
+
+Azure Database for MySQL Flexible server storage iops. Minimum 360, Maxium is determined by selected mysqlflexSkuName.
+
+Type: int
+
+Possible Values: null
+
+Default: 360
+
+
+### mysqlflexStgAutogrow
+
+
+
+Type: string
+
+Possible Values: ["Enabled","Disabled"]
+
+Default: Enabled
+
+
+### mysqlflexHaEnabled
+
+High availability mode for azure database for mysql flexible server.
+
+Type: string
+
+Possible Values: ["Disabled","SameZone","ZoneRedundant"]
+
+Default: Disabled
+
+
+### mysqlflexAvailabilityZone
+
+Availability Zone information of the server. (Leave blank for No Preference).
+
+Type: string
+
+Possible Values: ["1","2","3",""]
+
+Default:
+
+
+### mysqlflexStandbyAvailabilityZone
+
+Availability zone of the High availability standby server. (Leave blank for No Preference). Add this value if HA is enabled.
+
+Type: string
+
+Possible Values: ["1","2","3",""]
+
+Default:
 
 
 ### postgresVersion
 
-Postgresql version
+PostgreSQL Flexible Server major version for new deployments. Existing databases require a separately rehearsed migration and rollback plan.
 
 Type: string
 
-Possible Values: ["9.5","9.6"]
+Possible Values: ["18"]
 
-Default: 9.6
+Default: 18
+
+
+### postgresSkuName
+
+PostgreSQL Flexible Server compute size; verify regional availability and tier compatibility.
+
+Type: string
+
+Possible Values: null
+
+Default: Standard_D2ds_v5
+
+
+### postgresSkuTier
+
+PostgreSQL Flexible Server compute tier matching postgresSkuName.
+
+Type: string
+
+Possible Values: ["Burstable","GeneralPurpose","MemoryOptimized"]
+
+Default: GeneralPurpose
+
+
+### postgresStorageSizeGiB
+
+PostgreSQL Flexible Server Premium SSD storage size in GiB.
+
+Type: int
+
+Possible Values: null
+
+Default: 128
 
 
 ### sslEnforcement
@@ -460,11 +548,11 @@ Default: 12.0
 
 ### fileServerType
 
-File server type: GlusterFS, NFS, and NFS-HA (2-VM highly available NFS cluster)
+Shared file service: NFS, NFS-HA, BYO NFS or Azure Files. Gluster is no longer supported.
 
 Type: string
 
-Possible Values: ["gluster","nfs","nfs-ha","nfs-byo"]
+Possible Values: ["nfs","nfs-ha","nfs-byo","azurefiles"]
 
 Default: nfs
 
@@ -477,12 +565,23 @@ Type: string
 
 Possible Values: null
 
-Default: 
+Default:
+
+
+### OSDiskSizeInGB
+
+OS disk size per Webserver in VMSS
+
+Type: int
+
+Possible Values: null
+
+Default: 256
 
 
 ### fileServerDiskSize
 
-Size per disk for gluster nodes or nfs server
+Size in GiB per NFS data disk
 
 Type: int
 
@@ -493,7 +592,7 @@ Default: 127
 
 ### fileServerDiskCount
 
-Number of disks in raid0 per gluster node or nfs server
+Number of data disks for the NFS server
 
 Type: int
 
@@ -504,7 +603,7 @@ Default: 4
 
 ### fileServerVmSku
 
-VM size for the gluster or NFS-HA nodes
+VM size for the NFS-HA nodes
 
 Type: string
 
@@ -590,15 +689,26 @@ Possible Values: null
 Default: 
 
 
+### appGwWebSubnetEgressPublicIp
+
+(App Gateway with a custom VNet only) Static public egress IP used by the web subnet. Required when the custom web subnet uses public database access; ignored for repository-created VNets, which deploy a NAT Gateway.
+
+Type: string
+
+Possible Values: null
+
+Default:
+
+
 ### appGwSkuName
 
 (App Gateway https termination only) Name of the Applicate Gateway SKU
 
 Type: string
 
-Possible Values: ["Standard_Small","Standard_Medium","Standard_Large","WAF_Medium","WAF_Large"]
+Possible Values: ["Standard_v2","WAF_v2"]
 
-Default: Standard_Medium
+Default: Standard_v2
 
 
 ### appGwSkuTier
@@ -607,9 +717,9 @@ Default: Standard_Medium
 
 Type: string
 
-Possible Values: ["Standard","WAF"]
+Possible Values: ["Standard_v2","WAF_v2"]
 
-Default: Standard
+Default: Standard_v2
 
 
 ### appGwSkuCapacity
@@ -625,11 +735,11 @@ Default: 2
 
 ### storageAccountType
 
-Storage Account type. This storage account is only for the Moodle ObjectFS plugin and/or the (currently disabled) Azure Files file share option
+Storage account replication and performance. Premium_LRS creates BlockBlobStorage for ObjectFS or FileStorage for Azure Files; standard SKUs create StorageV2.
 
 Type: string
 
-Possible Values: ["Standard_LRS","Standard_GRS","Standard_ZRS"]
+Possible Values: ["Standard_LRS","Standard_GRS","Standard_ZRS","Premium_LRS"]
 
 Default: Standard_LRS
 
@@ -641,17 +751,6 @@ options of moodle global search
 Type: string
 
 Possible Values: ["none","azure","elastic"]
-
-Default: none
-
-
-### tikaService
-
-options of enabling tika service for file searching in moodle
-
-Type: string
-
-Possible Values: ["none","tika"]
 
 Default: none
 
@@ -711,17 +810,6 @@ Possible Values: null
 Default: Standard_D2ds_v5
 
 
-### tikaVmSku
-
-VM size for the tika search nodes
-
-Type: string
-
-Possible Values: null
-
-Default: Standard_D2ds_v5
-
-
 ### customVnetId
 
 Azure Resource ID of the Azure virtual network where you want to deploy your Moodle resources. A vnet resource ID is of the following format: /subscriptions/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxxxxxx/resourceGroups/gggg/providers/Microsoft.Network/virtualNetworks/vvvv. Note that this virtual network must be on the same Azure location as this template deployment location. If this parameter is blank, a new Azure virtual network will be created and used. In that case, the address space of the newly created virtual network will be */16 of the following vNetAddressSpace parameter value below.
@@ -772,9 +860,36 @@ Loadbalancer SKU
 
 Type: string
 
-Possible Values: ["Basic","Standard"]
+Possible Values: ["Standard"]
 
-Default: Basic
+Default: Standard
+
+
+### loadBalancerTier
+
+Loadbalancer Tier
+
+Type: string
+
+Possible Values: ["Regional","Global"]
+
+Default: Regional
+
+
+### ubuntuVersion
+
+Azure Marketplace SKU for Ubuntu 24.04 LTS AMD64 Gen2. The image is
+`Canonical:ubuntu-24_04-lts:server:latest`, as listed in
+[Canonical's image reference](https://github.com/canonical/ubuntu-cloud-docs/blob/main/docs/azure/azure-how-to/instances/find-ubuntu-images.rst).
+
+Type: string
+
+Possible Values: ["server"]
+
+Default: server
+
+Existing deployment and migration parameter files that explicitly set
+`ubuntuVersion` to `24_04-lts-gen2` must change that value to `server`.
 
 
 ### location
@@ -787,3 +902,13 @@ Possible Values: null
 
 Default: [resourceGroup().location]
 
+
+### isMigration
+
+Indicates whether the this template is using for migration scenario.
+
+Type: bool
+
+Possible Values: null
+
+Default: false

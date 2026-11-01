@@ -190,6 +190,12 @@ The whole-repository lint scan remains strict and currently reports legacy
 shell lint/formatting debt. The separate legacy live-deployment tester has not
 been ported or certified. No default CI step provisions or deletes resources.
 
+Run `npm install` and `npm test` on Linux with Bash and GNU coreutils. The
+suite lints deployment JSON and checks the Ubuntu image, generated PHP-FPM and
+Redis session settings, and cron timeout behavior. Cron tests use shortened
+fixture timeouts; deployed runs retain the 1800-second limit and 30-second kill
+grace period.
+
 ## Planning
 
 This is an open source project. We have a few mantras to ensure
@@ -350,4 +356,3 @@ Where a change is on the critical path or it is potentiall
 contriversial maintainers should request reviews using the GitHub
 tooling. The last reviewer to sign-off on the pull request will merge
 the pull request.
-

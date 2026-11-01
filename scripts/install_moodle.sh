@@ -238,7 +238,16 @@ set -ex
 mkdir -p /moodle/tmp
 cd /moodle/tmp
 
-if [ ! -d /moodle/html/moodle ]; then
+if [ "$isMigration" = "true" ]; then
+    if [ ! -f /moodle/html/moodle/public/r.php ] || [ ! -f /moodle/html/moodle/version.php ] || [ ! -f /moodle/html/moodle/config.php ]; then
+        echo "Migration requires pre-upgraded Moodle 5.3 code with public/r.php in /moodle/html/moodle." >&2
+        exit 1
+    fi
+    if ! /bin/grep -Eq "^[[:space:]]*[$]branch[[:space:]]*=[[:space:]]*['\"]503['\"];" /moodle/html/moodle/version.php; then
+        echo "Migration requires the existing Moodle code to be on branch 503." >&2
+        exit 1
+    fi
+elif [ ! -d /moodle/html/moodle ]; then
     # downloading moodle only if /moodle/html/moodle does not exist -- if it exists, user should populate it in advance correctly as below. This is to reduce template deployment time.
     /usr/bin/curl -k --max-redirs 10 "https://github.com/moodle/moodle/archive/${moodleVersion}.zip" -L -o moodle.zip
     /usr/bin/unzip -q moodle.zip
@@ -508,10 +517,10 @@ listen = /run/php/php${PhpVer}-fpm.sock
 listen.owner = www-data
 listen.group = www-data
 pm = dynamic
-pm.max_children = 3000
-pm.start_servers = 20 
-pm.min_spare_servers = 22 
-pm.max_spare_servers = 30 
+pm.max_children = 40
+pm.start_servers = 8
+pm.min_spare_servers = 4
+pm.max_spare_servers = 12
 EOF
 
    # Remove the default site. Moodle is the only site we want
@@ -804,6 +813,20 @@ local1.*   /var/log/sitelogs/moodle/access.log
 local1.err   /var/log/sitelogs/moodle/error.log
 local2.*   /var/log/sitelogs/moodle/cron.log
 EOF
+
+    # Rotate the site logs so they don't grow unbounded and fill the OS disk
+    cat <<EOF > /etc/logrotate.d/moodle-sitelogs
+/var/log/sitelogs/moodle/*.log {
+    daily
+    rotate 14
+    missingok
+    notifempty
+    compress
+    delaycompress
+    copytruncate
+}
+EOF
+
     service rsyslog restart
 
     # Fire off moodle setup
@@ -826,9 +849,22 @@ EOF
               echo "Migrating moodle DB dump file not found."
               exit 1
             fi
+
+                        moodleCodeVersion=$(/bin/sed -n "s/^[[:space:]]*[$]version[[:space:]]*=[[:space:]]*\([0-9][0-9]*\);.*/\1/p" /moodle/html/moodle/version.php | /usr/bin/head -n 1)
+                        moodleDbPrefix=$(/bin/sed -n "s/^[[:space:]]*[$]CFG->prefix[[:space:]]*=[[:space:]]*['\"]\([^'\"]*\)['\"].*/\1/p" /moodle/html/moodle/config.php | /usr/bin/head -n 1)
+                        if ! [[ "$moodleCodeVersion" =~ ^[0-9]+$ ]] || ! [[ "$moodleDbPrefix" =~ ^[A-Za-z0-9_]+$ ]]; then
+                            echo "Could not read safe Moodle version and database prefix values from the migrated code." >&2
+                            exit 1
+                        fi
             
             echo "Importing migration moodle DB."
             mysql -h $mysqlIP -u $mysqladminlogin -p${mysqladminpass} ${moodledbname} < /moodle/migration-db-moodle.sql
+
+                        moodleDbVersion=$(mysql -h $mysqlIP -u $mysqladminlogin -p${mysqladminpass} --batch --skip-column-names ${moodledbname} -e "SELECT value FROM ${moodleDbPrefix}config WHERE name='version' LIMIT 1;")
+                        if [ "$moodleDbVersion" != "$moodleCodeVersion" ]; then
+                            echo "Migrated database version $moodleDbVersion does not match Moodle code version $moodleCodeVersion." >&2
+                            exit 1
+                        fi
             
             echo "Updating moodle db config settings"
             replace_moodle_config_value "dbhost" "$mysqlIP"
@@ -893,11 +929,13 @@ EOF
         create_redis_configuration_in_moodledata_muc_config_php
 
         # redis configuration in /moodle/html/moodle/config.php
+        sed -i "23 a \$CFG->session_redis_connection_timeout = 10;  // Fail fast instead of hanging forever on dead Redis sockets." /moodle/html/moodle/config.php
         sed -i "23 a \$CFG->session_redis_lock_expire = 7200;" /moodle/html/moodle/config.php
         sed -i "23 a \$CFG->session_redis_acquire_lock_timeout = 120;" /moodle/html/moodle/config.php
         sed -i "23 a \$CFG->session_redis_prefix = 'moodle_prod'; // Optional, default is don't set one." /moodle/html/moodle/config.php
         sed -i "23 a \$CFG->session_redis_database = 0;  // Optional, default is db 0." /moodle/html/moodle/config.php
-        sed -i "23 a \$CFG->session_redis_port = 6379;  // Optional." /moodle/html/moodle/config.php
+        sed -i "23 a \$CFG->session_redis_port = 10000;  // Azure Managed Redis TLS port." /moodle/html/moodle/config.php
+        sed -i "23 a \$CFG->session_redis_encrypt = array('verify_peer' => false, 'verify_peer_name' => false);  // Azure Managed Redis requires TLS." /moodle/html/moodle/config.php
         sed -i "23 a \$CFG->session_redis_host = '$redisDns';" /moodle/html/moodle/config.php
         sed -i "23 a \$CFG->session_redis_auth = '$redisAuth';" /moodle/html/moodle/config.php
         sed -i "23 a \$CFG->session_handler_class = '\\\core\\\session\\\redis';" /moodle/html/moodle/config.php
@@ -935,7 +973,8 @@ EOF
 
    # create cron entry
    # It is scheduled for once per minute. It can be changed as needed.
-   echo '* * * * * www-data /usr/bin/php /moodle/html/moodle/admin/cli/cron.php 2>&1 | /usr/bin/logger -p local2.notice -t moodle' > /etc/cron.d/moodle-cron
+   # timeout guard prevents zombie cron processes piling up on dead Redis/DB sockets.
+   echo '* * * * * www-data /usr/bin/timeout -k 30 1800 /usr/bin/php /moodle/html/moodle/admin/cli/cron.php 2>&1 | /usr/bin/logger -p local2.notice -t moodle' > /etc/cron.d/moodle-cron
 
    # Set up cronned sql dump
    if [ "$dbServerType" = "mysql" ]; then

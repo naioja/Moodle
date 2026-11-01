@@ -2,6 +2,19 @@
     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
+        "_artifactsLocation": {
+            "metadata": {
+                "description": "Required base URI for linked templates and scripts. Pin this to the same committed revision as this migration template."
+            },
+            "type": "string"
+        },
+        "_artifactsLocationSasToken": {
+            "defaultValue": "",
+            "metadata": {
+                "description": "Optional SAS token for the artifacts location."
+            },
+            "type": "securestring"
+        },
         "redisDeploySwitch": {
             "defaultValue": "false",
             "metadata": {
@@ -41,7 +54,7 @@
             ],
             "defaultValue": "MOODLE_503_STABLE",
             "metadata": {
-                "description": "The Moodle version you want to install."
+                "description": "Required migration baseline. Upgrade and validate the existing code and database for Moodle 5.3 before deployment; this template does not run the Moodle upgrade."
             },
             "type": "string"
         },
@@ -89,11 +102,10 @@
         "dbServerType": {
             "defaultValue": "mysqlflex",
             "allowedValues": [
-                "postgres",
                 "mysqlflex"
             ],
             "metadata": {
-                "description": "Database type. The Moodle 5.3 default uses MySQL Flexible Server; legacy Single Server routes are not certified."
+                "description": "Migration target. Only MySQL Flexible Server is supported because this workflow restores a MySQL dump."
             },
             "type": "string"
         },
@@ -138,14 +150,15 @@
         "ubuntuVersion": {
             "type": "string",
             "allowedValues": [
-                "24_04-lts-gen2"
+                "server"
             ],
-            "defaultValue": "24_04-lts-gen2"
+            "defaultValue": "server",
+            "metadata": {
+                "description": "Azure Marketplace SKU for the Canonical ubuntu-24_04-lts offer. The server SKU is Ubuntu 24.04 LTS AMD64 Gen2."
+            }
         }
     },
     "variables": {
-        "_artifactsLocation": "https://raw.githubusercontent.com/Azure/Moodle/master/",
-        "_artifactsLocationSasToken": "",
         "unsupportedLocations": [
             "eastus2euap",
             "westcentralus"
@@ -164,10 +177,10 @@
                 "mode": "Incremental",
                 "parameters": {
                     "_artifactsLocation": {
-                        "value": "[variables('_artifactsLocation')]"
+                        "value": "[parameters('_artifactsLocation')]"
                     },
                     "_artifactsLocationSasToken": {
-                        "value": "[variables('_artifactsLocationSasToken')]"
+                        "value": "[parameters('_artifactsLocationSasToken')]"
                     },
                     "redisDeploySwitch": {
                         "value": "[bool(parameters('redisDeploySwitch'))]"
@@ -217,9 +230,6 @@
                     "mysqlflexVersion": {
                         "value": "[parameters('mysqlflexVersion')]"
                     },
-                    "postgresVersion": {
-                        "value": "18"
-                    },
                     "fileServerType": {
                         "value": "azurefiles"
                     },
@@ -252,7 +262,7 @@
                     }
                 },
                 "templateLink": {
-                    "uri": "[concat(variables('_artifactsLocation'), 'azuredeploy.json', variables('_artifactsLocationSasToken'))]"
+                    "uri": "[concat(parameters('_artifactsLocation'), 'azuredeploy.json', parameters('_artifactsLocationSasToken'))]"
                 }
             }
         }

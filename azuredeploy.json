@@ -575,6 +575,13 @@
             },
             "type": "string"
         },
+        "appGwWebSubnetEgressPublicIp": {
+            "defaultValue": "",
+            "metadata": {
+                "description": "(App Gateway with a custom VNet only) Static public egress IP used by the web subnet. Required when the custom web subnet uses public database access; ignored for repository-created VNets, which deploy a NAT Gateway."
+            },
+            "type": "string"
+        },
         "appGwSkuName": {
             "defaultValue": "Standard_v2",
             "allowedValues": [
@@ -615,7 +622,7 @@
                 "Premium_LRS"
             ],
             "metadata": {
-                "description": "Storage Account type. This storage account is only for the Moodle ObjectFS plugin and/or the (currently disabled) Azure Files file share option"
+                "description": "Storage account replication and performance. Premium_LRS creates BlockBlobStorage for ObjectFS or FileStorage for Azure Files; standard SKUs create StorageV2."
             },
             "type": "string"
         },
@@ -747,9 +754,12 @@
         "ubuntuVersion": {
             "type": "string",
             "allowedValues": [
-                "24_04-lts-gen2"
+                "server"
             ],
-            "defaultValue": "24_04-lts-gen2"
+            "defaultValue": "server",
+            "metadata": {
+                "description": "Azure Marketplace SKU for the Canonical ubuntu-24_04-lts offer. The server SKU is Ubuntu 24.04 LTS AMD64 Gen2."
+            }
         },
         "location": {
             "type": "string",
@@ -1215,6 +1225,7 @@
             "gatewayType": "[parameters('gatewayType')]",
             "htmlLocalCopySwitch": "[parameters('htmlLocalCopySwitch')]",
             "httpsTermination": "[parameters('httpsTermination')]",
+            "appGwWebSubnetEgressPublicIp": "[parameters('appGwWebSubnetEgressPublicIp')]",
             "installGdprPluginsSwitch": "[parameters('installGdprPluginsSwitch')]",
             "installO365pluginsSwitch": "[parameters('installO365pluginsSwitch')]",
             "installObjectFsSwitch": "[parameters('installObjectFsSwitch')]",
@@ -1259,7 +1270,7 @@
             "nfsHaNode1IP": "[concat(variables('subnetSanPrefix'), '.120')]",
             "osDiskStorageType": "[parameters('osDiskStorageType')]",
             "osType": {
-                "offer": "0001-com-ubuntu-server-noble",
+                "offer": "ubuntu-24_04-lts",
                 "publisher": "Canonical",
                 "sku": "[parameters('ubuntuVersion')]",
                 "version": "latest"
@@ -1272,7 +1283,7 @@
             "postgresStorageSizeGiB": "[parameters('postgresStorageSizeGiB')]",
             "redisCacheName": "[concat('redis-',variables('resourceprefix'))]",
             "redisDeploySwitch": "[parameters('redisDeploySwitch')]",
-            "redisDns": "[concat('redis-',variables('resourceprefix'),'.redis.cache.windows.net')]",
+            "redisDns": "[concat('redis-',variables('resourceprefix'),'.',parameters('location'),'.redis.azure.net')]",
             "resourcesPrefix": "[variables('resourceprefix')]",
             "searchType": "[parameters('searchType')]",
             "serverName": "[concat(parameters('dbServerType'), '-',variables('resourceprefix'))]",

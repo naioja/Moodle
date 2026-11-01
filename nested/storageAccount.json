@@ -16,7 +16,7 @@
             "apiVersion": "2026-09-01",
             "location": "[parameters('moodleCommon').location]",
             "name": "[concat(parameters('moodleCommon').storageAccountName,'naf')]",
-            "kind": "StorageV2",
+            "kind": "[if(equals(parameters('moodleCommon').storageAccountType, 'Premium_LRS'), 'BlockBlobStorage', 'StorageV2')]",
             "sku": {
                 "name": "[parameters('moodleCommon').storageAccountType]"
             },
@@ -25,9 +25,6 @@
                     "keySource": "Microsoft.Storage",
                     "services": {
                         "blob": {
-                            "enabled": true
-                        },
-                        "file": {
                             "enabled": true
                         }
                     }

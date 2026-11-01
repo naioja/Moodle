@@ -17,13 +17,20 @@ assert_json azuredeploy.json '
     .moodleVersion.defaultValue == "MOODLE_503_STABLE" and
     .moodleVersion.allowedValues == ["MOODLE_503_STABLE"] and
     .phpVersion.defaultValue == "8.3" and
-    .ubuntuVersion.defaultValue == "24_04-lts-gen2" and
+    .ubuntuVersion.defaultValue == "server" and
+    .ubuntuVersion.allowedValues == ["server"] and
     .controllerVmSku.defaultValue == "Standard_D4ds_v5" and
     .autoscaleVmSku.defaultValue == "Standard_D2ds_v5" and
     .fileServerVmSku.defaultValue == "Standard_D4ds_v5" and
     .elasticVmSku.defaultValue == "Standard_D2ds_v5" and
     .enableAccelNwForCtlrVmSwitch.defaultValue == true and
     .enableAccelNwForOtherVmsSwitch.defaultValue == true
+'
+assert_json azuredeploy.json '
+    .variables.moodleCommon.osType.publisher == "Canonical" and
+    .variables.moodleCommon.osType.offer == "ubuntu-24_04-lts" and
+    .variables.moodleCommon.osType.sku == "[parameters('"'"'ubuntuVersion'"'"')]" and
+    .variables.moodleCommon.osType.version == "latest"
 '
 
 for preset_name in minimal small2mid-noha large-ha maximal; do
@@ -43,6 +50,8 @@ done
 assert_json migration/azuredeploy-migration.json '
     .parameters.moodleVersion.defaultValue == "MOODLE_503_STABLE" and
     .parameters.moodleVersion.allowedValues == ["MOODLE_503_STABLE"] and
+    .parameters.ubuntuVersion.defaultValue == "server" and
+    .parameters.ubuntuVersion.allowedValues == ["server"] and
     .parameters.autoscaleVmSku.defaultValue == "Standard_D2ds_v5" and
     .parameters.loadBalancerSku.allowedValues == ["Standard"] and
     .resources[0].properties.parameters.controllerVmSku.value == "Standard_D4ds_v5" and
@@ -84,12 +93,12 @@ assert_json nested/db-mysqlflex.json "
 
 assert_json migration/azuredeploy-migration.json "
     .parameters.dbServerType.defaultValue == \"mysqlflex\" and
-    (.parameters.dbServerType.allowedValues | index(\"mysqlflex\") != null) and
+    .parameters.dbServerType.allowedValues == [\"mysqlflex\"] and
     .parameters.mysqlflexVersion.defaultValue == \"8.4\" and
     .parameters.mysqlflexVersion.allowedValues == [\"8.4\"] and
     (.parameters | has(\"mysqlVersion\") | not) and
     (.parameters.dbServerType.allowedValues | index(\"mysql\") == null) and
-    .resources[0].properties.parameters.postgresVersion.value == \"18\" and
+    (.resources[0].properties.parameters | has(\"postgresVersion\") | not) and
     .resources[0].properties.parameters.mysqlflexVersion.value == \"[parameters('mysqlflexVersion')]\"
 "
 
@@ -128,12 +137,23 @@ if printf '%s\n%s\n' "$storage_type_helper" 'check_fileServerType_param gluster'
 fi
 
 assert_json nested/storageAccount.json "
-    .resources[0].kind == \"StorageV2\" and
+    .resources[0].kind == \"[if(equals(parameters('moodleCommon').storageAccountType, 'Premium_LRS'), 'BlockBlobStorage', 'StorageV2')]\" and
     .resources[1].kind == \"[if(equals(parameters('moodleCommon').storageAccountType, 'Premium_LRS'), 'FileStorage', 'StorageV2')]\"
 "
 assert_json nested/webvmss.json '
     all(.resources[] | select(.type == "Microsoft.Storage/storageAccounts"); .kind == "StorageV2")
 '
+
+assert_json nested/redis.json '
+    any(.resources[]; .type == "Microsoft.Cache/redisEnterprise" and .apiVersion == "2025-07-01" and .properties.minimumTlsVersion == "1.2" and .properties.publicNetworkAccess == "Disabled") and
+    any(.resources[]; .type == "Microsoft.Cache/redisEnterprise/databases" and .apiVersion == "2025-04-01" and .properties.clientProtocol == "Encrypted" and .properties.port == 10000) and
+    any(.resources[]; .type == "Microsoft.Network/privateEndpoints") and
+    any(.resources[]; .type == "Microsoft.Network/privateDnsZones" and .name == "[variables('"'"'privateDnsZoneName'"'"')]") and
+    (.outputs.redisKey.value | contains("redisDbResourceId") and contains("2025-04-01"))
+'
+grep -Fq "session_redis_port = 10000" "$repository_root/scripts/install_moodle.sh"
+grep -Fq "session_redis_connection_timeout = 10" "$repository_root/scripts/install_moodle.sh"
+grep -Fq "session_redis_encrypt = array" "$repository_root/scripts/install_moodle.sh"
 
 unzip_helper="$(sed -n '/^function get_moodle_unzip_dir_from_moodle_version {/,/^}/p' "$repository_root/scripts/helper_functions.sh")"
 [[ -n "$unzip_helper" ]]

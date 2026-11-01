@@ -1,5 +1,5 @@
 {
-  "assessmentDate": "2026-10-23",
+  "assessmentDate": "2026-11-01",
   "schemaCommit": "bf674099772d7c32f50883f179f180cf682a00ac",
   "resources": {
     "Microsoft.Network/natGateways": {
@@ -30,9 +30,13 @@
       "apiVersion": "2024-06-01",
       "source": "https://raw.githubusercontent.com/Azure/azure-resource-manager-schemas/bf674099772d7c32f50883f179f180cf682a00ac/schemas/2024-06-01/Microsoft.Network.json"
     },
-    "Microsoft.Cache/redis": {
-      "apiVersion": "2024-11-01",
-      "source": "https://raw.githubusercontent.com/Azure/azure-resource-manager-schemas/bf674099772d7c32f50883f179f180cf682a00ac/schemas/2024-11-01/Microsoft.Cache.json"
+    "Microsoft.Cache/redisEnterprise": {
+      "apiVersion": "2025-07-01",
+      "source": "https://raw.githubusercontent.com/Azure/azure-resource-manager-schemas/bf674099772d7c32f50883f179f180cf682a00ac/schemas/2025-07-01/Microsoft.Cache.json"
+    },
+    "Microsoft.Cache/redisEnterprise/databases": {
+      "apiVersion": "2025-04-01",
+      "source": "https://raw.githubusercontent.com/Azure/azure-resource-manager-schemas/bf674099772d7c32f50883f179f180cf682a00ac/schemas/2025-04-01/Microsoft.Cache.json"
     },
     "Microsoft.Network/ddosProtectionPlans": {
       "apiVersion": "2026-03-01",
@@ -126,6 +130,14 @@
       "apiVersion": "2024-06-01",
       "source": "https://raw.githubusercontent.com/Azure/azure-resource-manager-schemas/bf674099772d7c32f50883f179f180cf682a00ac/schemas/2024-06-01/Microsoft.Network.json"
     },
+    "Microsoft.Network/privateEndpoints": {
+      "apiVersion": "2026-03-01",
+      "source": "https://raw.githubusercontent.com/Azure/azure-resource-manager-schemas/bf674099772d7c32f50883f179f180cf682a00ac/schemas/2026-03-01/Microsoft.Network.json"
+    },
+    "Microsoft.Network/privateEndpoints/privateDnsZoneGroups": {
+      "apiVersion": "2026-03-01",
+      "source": "https://raw.githubusercontent.com/Azure/azure-resource-manager-schemas/bf674099772d7c32f50883f179f180cf682a00ac/schemas/2026-03-01/Microsoft.Network.json"
+    },
     "Microsoft.Network/loadBalancers": {
       "apiVersion": "2026-03-01",
       "source": "https://raw.githubusercontent.com/Azure/azure-resource-manager-schemas/bf674099772d7c32f50883f179f180cf682a00ac/schemas/2026-03-01/Microsoft.Network.json"
@@ -168,6 +180,10 @@
       "apiVersion": "2026-03-01",
       "resourceType": "Microsoft.Network/virtualNetworks and Microsoft.Network/publicIPAddresses"
     },
+    "nested/network-subnets.json": {
+      "apiVersion": "2026-03-01",
+      "resourceType": "Microsoft.Network/publicIPAddresses"
+    },
     "nested/storageAccount.json": {
       "apiVersion": "2026-09-01",
       "resourceType": "Microsoft.Storage/storageAccounts"
@@ -177,8 +193,8 @@
       "resourceType": "Microsoft.Search/searchServices"
     },
     "nested/redis.json": {
-      "apiVersion": "2024-11-01",
-      "resourceType": "Microsoft.Cache/redis"
+      "apiVersion": "2025-04-01",
+      "resourceType": "Microsoft.Cache/redisEnterprise/databases"
     },
     "nested/webvmss.json": {
       "apiVersion": "2018-10-01",
